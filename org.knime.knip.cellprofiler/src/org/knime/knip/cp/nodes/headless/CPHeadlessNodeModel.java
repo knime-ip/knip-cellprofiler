@@ -16,12 +16,12 @@ import org.knime.core.node.defaultnodesettings.SettingsModelString;
 
 public class CPHeadlessNodeModel extends NodeModel {
 
-	protected static SettingsModelString createPathToCellProfilerModel() {
-		return new SettingsModelString("path_to_cellprofiler", "");
+	protected static SettingsModelString createPathToCPInstallationModel() {
+		return new SettingsModelString("path_to_cellprofiler_installation", "");
 	}
 
-	protected static SettingsModelString createPathToPipelineModel() {
-		return new SettingsModelString("path_to_pipeline", "");
+	protected static SettingsModelString createPathToCPProjectModel() {
+		return new SettingsModelString("path_to_cp_project", "");
 	}
 
 	public static SettingsModelString createImageColumnNameModel() {
@@ -35,9 +35,9 @@ public class CPHeadlessNodeModel extends NodeModel {
 		super(1, 3);
 	}
 
-	private SettingsModelString m_pathToCellProfilerModel = createPathToCellProfilerModel();
+	private SettingsModelString m_pathToCPInstallationModel = createPathToCPInstallationModel();
 
-	private SettingsModelString m_pathToPipelineModel = createPathToPipelineModel();
+	private SettingsModelString m_pathToCPProjectModel = createPathToCPProjectModel();
 
 	private SettingsModelString m_imgColumnNameModel = createImageColumnNameModel();
 
@@ -87,24 +87,24 @@ public class CPHeadlessNodeModel extends NodeModel {
 
 	@Override
 	protected void saveSettingsTo(NodeSettingsWO settings) {
-		m_pathToCellProfilerModel.saveSettingsTo(settings);
-		m_pathToPipelineModel.saveSettingsTo(settings);
+		m_pathToCPInstallationModel.saveSettingsTo(settings);
+		m_pathToCPProjectModel.saveSettingsTo(settings);
 		m_imgColumnNameModel.saveSettingsTo(settings);
 	}
 
 	@Override
 	protected void validateSettings(NodeSettingsRO settings)
 			throws InvalidSettingsException {
-		m_pathToCellProfilerModel.validateSettings(settings);
-		m_pathToPipelineModel.validateSettings(settings);
+		m_pathToCPInstallationModel.validateSettings(settings);
+		m_pathToCPProjectModel.validateSettings(settings);
 		m_imgColumnNameModel.validateSettings(settings);
 	}
 
 	@Override
 	protected void loadValidatedSettingsFrom(NodeSettingsRO settings)
 			throws InvalidSettingsException {
-		m_pathToCellProfilerModel.loadSettingsFrom(settings);
-		m_pathToPipelineModel.loadSettingsFrom(settings);
+		m_pathToCPInstallationModel.loadSettingsFrom(settings);
+		m_pathToCPProjectModel.loadSettingsFrom(settings);
 		m_imgColumnNameModel.loadSettingsFrom(settings);
 	}
 

@@ -12,12 +12,12 @@ public class CPHeadLessNodeDialog extends DefaultNodeSettingsPane {
 		// path to cell profiler instance
 
 		addDialogComponent(new DialogComponentFileChooser(
-				CPHeadlessNodeModel.createPathToCellProfilerModel(),
-				"Path to CellProfiler"));
+				CPHeadlessNodeModel.createPathToCPInstallationModel(),
+				"Path to CellProfiler Installation"));
 
 		addDialogComponent(new DialogComponentFileChooser(
-				CPHeadlessNodeModel.createPathToPipelineModel(),
-				"Path to Pipeline"));
+				CPHeadlessNodeModel.createPathToCPProjectModel(),
+				"Path to CellProfiler Project"));
 
 		// column containing images
 		addDialogComponent(new DialogComponentColumnNameSelection(
