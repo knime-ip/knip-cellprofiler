@@ -13,16 +13,20 @@ public class CPHeadLessNodeDialog extends DefaultNodeSettingsPane {
 
 		addDialogComponent(new DialogComponentFileChooser(
 				CPHeadlessNodeModel.createPathToCPInstallationModel(),
-				"Path to CellProfiler Installation"));
+				"Path to CellProfiler Installation", 0, true));
 
 		addDialogComponent(new DialogComponentFileChooser(
-				CPHeadlessNodeModel.createPathToCPProjectModel(),
-				"Path to CellProfiler Project"));
+				CPHeadlessNodeModel.createPathToCPPipelineModel(),
+				"Path to CellProfiler Pipeline", 1, true));
 
 		// column containing images
 		addDialogComponent(new DialogComponentColumnNameSelection(
 				CPHeadlessNodeModel.createImageColumnNameModel(),
 				"Select Column Containing Images", 0, ImgPlusValue.class));
+		
+		addDialogComponent(new DialogComponentColumnNameSelection(
+				CPHeadlessNodeModel.createMoreImageColumnNameModel(),
+				"Select Column Containing More Images", 0, ImgPlusValue.class));
 
 	}
 
