@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="org.knime.workbench.ui.preferences"
+            class="org.knime.knip.cellprofiler.CellProfilerPreferencePage"
+            id="org.knime.knip.cellprofiler.CellProfilerPreferencePage"
+            name="CellProfiler">
+      </page>
+   </extension>
+     <extension
+           point="org.knime.workbench.repository.categories">
+        <category
+        	  description="CellProfiler Integration"
+              level-id="cellprofiler"
+              name="CellProfiler"
+              icon="/icons/cellprofiler.png"
+              path="/community/knip">
+        </category>
+     </extension>
+     <extension
+           point="org.knime.workbench.repository.nodes">
+        <node
+              category-path="/community/knip/cellprofiler"
+              expert-flag="false"
+              factory-class="org.knime.knip.cellprofiler.nodes.pipelineexecutor.PipelineExecutorNodeFactory"
+              id="org.knime.knip.cellprofiler.nodes.pipelineexecutor.PipelineExecutorNodeFactory">
+        </node>
+     </extension>
+</plugin>
