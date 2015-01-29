@@ -4,7 +4,11 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -85,7 +89,7 @@ public class CellProfilerSegmentation implements Serializable {
 		hcb.append(m_stringFeatures);
 		return super.hashCode();
 	}
-
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {
@@ -95,18 +99,41 @@ public class CellProfilerSegmentation implements Serializable {
 			return false;
 		}
 		final CellProfilerSegmentation seg = (CellProfilerSegmentation) obj;
-		EqualsBuilder eb = new EqualsBuilder();
-		eb.append(m_doubleFeatures, seg.m_doubleFeatures);
-		eb.append(m_floatFeatures, seg.m_floatFeatures);
-		eb.append(m_integerFeatures, seg.m_integerFeatures);
-		eb.append(m_stringFeatures, seg.m_stringFeatures);
-		return eb.isEquals();
+		if (!m_stringFeatures.equals(seg.m_stringFeatures)) {
+			return false;
+		}
+		if (!(m_doubleFeatures.keySet().equals(seg.m_doubleFeatures.keySet())
+				&& m_floatFeatures.keySet().equals(seg.m_floatFeatures.keySet())
+				&& m_integerFeatures.keySet().equals(seg.m_integerFeatures.keySet()))) {
+			return false;
+		}
+		for (String key : m_doubleFeatures.keySet()) {
+			if (!Arrays.equals(m_doubleFeatures.get(key), seg.m_doubleFeatures.get(key))) {
+				return false;
+			}
+		}
+		for (String key : m_floatFeatures.keySet()) {
+			if (!Arrays.equals(m_floatFeatures.get(key), seg.m_floatFeatures.get(key))) {
+				return false;
+			}
+		}
+		for (String key : m_integerFeatures.keySet()) {
+			if (!Arrays.equals(m_integerFeatures.get(key), seg.m_integerFeatures.get(key))) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Override
 	public String toString() {
-		return m_doubleFeatures + "\n" + m_floatFeatures + "\n"
-				+ m_integerFeatures + "\n" + m_stringFeatures;
+		List<String> features = new ArrayList<String>();
+		features.addAll(m_doubleFeatures.keySet());
+		features.addAll(m_floatFeatures.keySet());
+		features.addAll(m_integerFeatures.keySet());
+		features.addAll(m_stringFeatures.keySet());
+		Collections.sort(features);
+		return features.toString();
 	}
 
 	public void save(final DataOutput output) throws IOException {

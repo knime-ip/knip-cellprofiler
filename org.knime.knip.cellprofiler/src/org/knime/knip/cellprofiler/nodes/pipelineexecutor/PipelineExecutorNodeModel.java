@@ -2,11 +2,8 @@ package org.knime.knip.cellprofiler.nodes.pipelineexecutor;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 
-import org.cellprofiler.knimebridge.PipelineException;
-import org.cellprofiler.knimebridge.ProtocolException;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.node.BufferedDataTable;
@@ -44,9 +41,15 @@ public class PipelineExecutorNodeModel extends NodeModel {
 	protected BufferedDataTable[] execute(BufferedDataTable[] inData,
 			ExecutionContext exec) throws Exception {
 		BufferedDataTable table;
-		CellProfilerInstance cellProfiler = new CellProfilerInstance(
-				m_config.getPipelineFile());
+		CellProfilerInstance cellProfiler = new CellProfilerInstance();
 		try {
+			cellProfiler.loadPipeline(m_config.getPipelineFile());
+			// Check if pipeline input parameters have changed
+			if (!Arrays.equals(cellProfiler.getInputParameters(),
+					m_config.getInputParameters())) {
+				throw new InvalidSettingsException(
+						"The input parameters of the pipeline have changed");
+			}
 			table = cellProfiler.execute(exec, inData[0],
 					createInputParameters());
 		} finally {
@@ -86,48 +89,27 @@ public class PipelineExecutorNodeModel extends NodeModel {
 			throw new InvalidSettingsException("The pipeline file "
 					+ pipelineFile + " is a folder");
 		}
-		// Create output spec
-		DataTableSpec spec;
-		CellProfilerInstance cellProfiler;
-		try {
-			cellProfiler = new CellProfilerInstance(pipelineFile);
-		} catch (IOException | ProtocolException | URISyntaxException
-				| PipelineException e) {
-			throw new InvalidSettingsException(e.getMessage(), e);
-		}
-		try {
-			// Check if pipeline input parameters have changed
-			if (!Arrays.equals(cellProfiler.getInputParameters(),
-					m_config.getInputParameters())) {
-				throw new InvalidSettingsException(
-						"The input parameters of the pipeline have changed");
+		// Check column configuration
+		String[] imageColumns = m_config.getImageColumns();
+		for (int i = 0; i < imageColumns.length; i++) {
+			if (imageColumns[i].isEmpty()) {
+				throw new InvalidSettingsException("Image " + (i + 1)
+						+ " not selected");
 			}
-			// Check column configuration
-			String[] imageColumns = m_config.getImageColumns();
-			for (int i = 0; i < imageColumns.length; i++) {
-				if (imageColumns[i].isEmpty()) {
-					throw new InvalidSettingsException("Image " + (i + 1)
-							+ " not selected");
-				}
-				DataColumnSpec imageColumnSpec = inSpecs[0]
-						.getColumnSpec(imageColumns[i]);
-				if (imageColumnSpec == null) {
-					throw new InvalidSettingsException("The column "
-							+ imageColumns[i]
-							+ " is missing in the input table");
-				}
-				if (!imageColumnSpec.getType().isCompatible(ImgPlusValue.class)) {
-					throw new InvalidSettingsException("The column "
-							+ imageColumns[i]
-							+ " is not of the type image plus");
-				}
+			DataColumnSpec imageColumnSpec = inSpecs[0]
+					.getColumnSpec(imageColumns[i]);
+			if (imageColumnSpec == null) {
+				throw new InvalidSettingsException("The column "
+						+ imageColumns[i]
+						+ " is missing in the input table");
 			}
-			spec = cellProfiler.getOutputSpec(inSpecs[0],
-					createInputParameters());
-		} finally {
-			cellProfiler.close();
+			if (!imageColumnSpec.getType().isCompatible(ImgPlusValue.class)) {
+				throw new InvalidSettingsException("The column "
+						+ imageColumns[i]
+						+ " is not of the type image plus");
+			}
 		}
-		return new DataTableSpec[] { spec };
+		return new DataTableSpec[] { CellProfilerInstance.getOutputSpec(inSpecs[0], createInputParameters()) };
 	}
 
 	/**

@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import org.knime.core.node.util.ColumnSelectionComboxBox;
 import org.knime.core.node.util.FilesHistoryPanel;
 import org.knime.knip.base.data.img.ImgPlusValue;
 import org.knime.knip.cellprofiler.CellProfilerInstance;
+import org.zeromq.ZMQException;
 
 /**
  * CellProfiler Pipeline Executor node dialog.
@@ -50,6 +52,8 @@ public class PipelineExecutorNodeDialog extends NodeDialogPane {
 	private DataTableSpec m_spec = new DataTableSpec(new DataColumnSpec[0]);
 
 	private String[] m_inputParameters = new String[0];
+	
+	private CellProfilerInstance m_cellProfiler;
 
 	/**
 	 * Constructor.
@@ -87,17 +91,16 @@ public class PipelineExecutorNodeDialog extends NodeDialogPane {
 		// anything goes wrong we default to 0
 		String[] inputParameters = new String[0];
 		String pipelineFile = m_pipelineFile.getSelectedFile();
-		if (!pipelineFile.isEmpty()) {
+		if (!pipelineFile.isEmpty() && new File(pipelineFile).exists()) {
 			try {
-				CellProfilerInstance cellProfiler = new CellProfilerInstance(
-						pipelineFile);
+				//CellProfilerInstance cellProfiler = new CellProfilerInstance(pipelineFile);
+				m_cellProfiler.loadPipeline(pipelineFile);
 				try {
-					inputParameters = cellProfiler.getInputParameters();
+					inputParameters = m_cellProfiler.getInputParameters();
 				} finally {
-					cellProfiler.close();
+					//cellProfiler.close();
 				}
-			} catch (IOException | ProtocolException | URISyntaxException
-					| PipelineException e) {
+			} catch (ZMQException | PipelineException | ProtocolException | IOException e) {
 				LOGGER.error(e.getMessage(), e);
 			}
 		}
@@ -113,9 +116,9 @@ public class PipelineExecutorNodeDialog extends NodeDialogPane {
 	public void updateColumnSelection(String[] inputParameters) {
 		if (!Arrays.equals(inputParameters, m_inputParameters)) {
 			// Remove old column selectors
-			for (int i = 0; i < m_imageColumns.size(); i++) {
-				m_panel.remove(m_imageColumns.get(i));
-				m_imageColumns.remove(i);
+			while (m_imageColumns.size() > 0) {
+				m_panel.remove(m_imageColumns.get(0));
+				m_imageColumns.remove(0);
 			}
 			if (inputParameters.length > 0) {
 				// Add new column selectors
@@ -145,6 +148,25 @@ public class PipelineExecutorNodeDialog extends NodeDialogPane {
 		// Repaint
 		m_panel.revalidate();
 		m_panel.repaint();
+	}
+	
+	@Override
+	public void onOpen() {
+		try {
+			m_cellProfiler = new CellProfilerInstance();
+		} catch (ZMQException | IOException | ProtocolException
+				| URISyntaxException | PipelineException e1) {
+			LOGGER.error(e1.getMessage(), e1);
+		}
+		super.onOpen();
+	}
+	
+	@Override
+	public void onClose() {
+		if (m_cellProfiler != null) {
+			m_cellProfiler.close();
+		}
+		super.onClose();
 	}
 
 	/**

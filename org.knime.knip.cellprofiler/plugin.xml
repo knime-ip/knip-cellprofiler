@@ -29,4 +29,14 @@
               id="org.knime.knip.cellprofiler.nodes.pipelineexecutor.PipelineExecutorNodeFactory">
         </node>
      </extension>
+   <extension
+         point="org.knime.core.DataValueRenderer">
+      <dataValue
+            valueClass="org.knime.knip.cellprofiler.data.CellProfilerValue">
+         <renderer
+               rendererFactoryClass="org.knime.core.data.renderer.DefaultDataValueRenderer$Factory"
+               suggestAsDefault="true">
+         </renderer>
+      </dataValue>
+   </extension>
 </plugin>

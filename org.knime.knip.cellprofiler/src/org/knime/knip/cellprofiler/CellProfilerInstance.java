@@ -44,21 +44,18 @@ import org.zeromq.ZMQException;
 @SuppressWarnings("deprecation")
 public class CellProfilerInstance {
 	
-	private static final boolean START_PROCESS = false;
-
 	private Process m_pythonProcess;
 
 	private boolean closed = false;
-
-	private IKnimeBridge m_knimeBridge = new KnimeBridgeFactory()
-			.newKnimeBridge();
-
+	
+	private IKnimeBridge m_knimeBridge = new KnimeBridgeFactory().newKnimeBridge();
+	
+	private int m_port;
+	
 	/**
 	 * Creates a CellProfiler instance in a separate Python process and connects
 	 * to it via TCP.
 	 * 
-	 * @param pipelineFile
-	 *            The pipeline file to execute
 	 * @throws IOException
 	 *             If something goes wrong
 	 * @throws URISyntaxException
@@ -66,7 +63,7 @@ public class CellProfilerInstance {
 	 * @throws ZMQException
 	 * @throws PipelineException
 	 */
-	public CellProfilerInstance(String pipelineFile) throws IOException,
+	public CellProfilerInstance() throws IOException,
 			ZMQException, ProtocolException, URISyntaxException,
 			PipelineException {
 		// Do some error checks on the configured module path
@@ -83,14 +80,15 @@ public class CellProfilerInstance {
 					+ cellProfilerModule + " is a directory");
 		}
 		// Get a free port for communication with CellProfiler
-		int port = getFreePort();
+		m_port = getFreePort();
 		// Start CellProfiler
-		if (START_PROCESS) {
-			ProcessBuilder processBuilder = new ProcessBuilder(cellProfilerModule, "" + port);
-			m_pythonProcess = processBuilder.start();
-		}
+		ProcessBuilder processBuilder = new ProcessBuilder("python", cellProfilerModule, "--knime-bridge-address=tcp://127.0.0.1:" + m_port);
+		m_pythonProcess = processBuilder.start();
 		// Connect to CellProfiler via the given port
-		m_knimeBridge.connect(new URI("tcp://localhost:" + 8080));
+		m_knimeBridge.connect(new URI("tcp://127.0.0.1:" + m_port));
+	}
+	
+	public void loadPipeline(final String pipelineFile) throws ZMQException, PipelineException, ProtocolException, IOException {
 		m_knimeBridge.loadPipeline(FileUtils.readFileToString(new File(pipelineFile)));
 	}
 
@@ -105,9 +103,10 @@ public class CellProfilerInstance {
 	/**
 	 * @return Spec of the output produced by the pipeline.
 	 */
-	public DataTableSpec getOutputSpec(DataTableSpec inSpec,
+	public static DataTableSpec getOutputSpec(DataTableSpec inSpec,
 			Pair<String, String>[] imageColumns) {
-		return createColumnRearranger(inSpec, imageColumns).createSpec();
+		// Passing null to createColumnRearranger will cause an NPE if we use it for more than the spec
+		return createColumnRearranger(inSpec, imageColumns, null).createSpec();
 	}
 
 	/**
@@ -133,33 +132,33 @@ public class CellProfilerInstance {
 			throws IOException, ZMQException, CellProfilerException,
 			PipelineException, ProtocolException, CanceledExecutionException {
 		ColumnRearranger colRearranger = createColumnRearranger(
-				inputTable.getDataTableSpec(), imageColumns);
+				inputTable.getDataTableSpec(), imageColumns, m_knimeBridge);
 		return exec.createColumnRearrangeTable(inputTable, colRearranger, exec);
 	}
 
-	private CellProfilerContent createCellProfilerContent() {
+	private static CellProfilerContent createCellProfilerContent(final IKnimeBridge knimeBridge) {
 		CellProfilerContent content = new CellProfilerContent();
-		for (String segmentationName : m_knimeBridge.getObjectNames()) {
+		for (String segmentationName : knimeBridge.getObjectNames()) {
 			CellProfilerSegmentation segmentation = new CellProfilerSegmentation();
-			for (IFeatureDescription featureDescription : m_knimeBridge
+			for (IFeatureDescription featureDescription : knimeBridge
 					.getFeatures(segmentationName)) {
 				if (featureDescription.getType().equals(Double.class)) {
-					double[] values = m_knimeBridge
+					double[] values = knimeBridge
 							.getDoubleMeasurements((IFeatureDescription) featureDescription);
 					segmentation.addDoubleFeature(featureDescription.getName(),
 							values);
 				} else if (featureDescription.getType().equals(Float.class)) {
-					float[] values = m_knimeBridge
+					float[] values = knimeBridge
 							.getFloatMeasurements((IFeatureDescription) featureDescription);
 					segmentation.addFloatFeature(featureDescription.getName(),
 							values);
 				} else if (featureDescription.getType().equals(Integer.class)) {
-					int[] values = m_knimeBridge
+					int[] values = knimeBridge
 							.getIntMeasurements((IFeatureDescription) featureDescription);
 					segmentation.addIntegerFeature(
 							featureDescription.getName(), values);
 				} else if (featureDescription.getType().equals(String.class)) {
-					String value = m_knimeBridge
+					String value = knimeBridge
 							.getStringMeasurement((IFeatureDescription) featureDescription);
 					segmentation.addStringFeature(featureDescription.getName(),
 							value);
@@ -177,19 +176,7 @@ public class CellProfilerInstance {
 		if (!closed) {
 			closed = true;
 			m_knimeBridge.disconnect();
-			if (START_PROCESS) {
-				// Give the process 5 seconds to shut down gracefully then kill it
-				new Thread(new Runnable() {
-					@Override
-					public void run() {
-						try {
-							Thread.sleep(5000);
-						} catch (InterruptedException e) {
-						}
-						m_pythonProcess.destroy();
-					}
-				});
-			}
+			m_pythonProcess.destroy();
 		}
 	}
 
@@ -222,8 +209,8 @@ public class CellProfilerInstance {
 		return port;
 	}
 
-	private ColumnRearranger createColumnRearranger(final DataTableSpec inSpec,
-			final Pair<String, String>[] imageColumns) {
+	private static ColumnRearranger createColumnRearranger(final DataTableSpec inSpec,
+			final Pair<String, String>[] imageColumns, final IKnimeBridge knimeBridge) {
 		ColumnRearranger rearranger = new ColumnRearranger(inSpec);
 		DataColumnSpec[] colSpecs = new DataColumnSpec[1];
 		String columnName = DataTableSpec.getUniqueColumnName(inSpec,
@@ -238,7 +225,7 @@ public class CellProfilerInstance {
 			@Override
 			public DataCell[] getCells(final DataRow row) {
 				try {
-					return createCells(row, inSpec, imageColumns, colIndexes);
+					return createCells(row, inSpec, imageColumns, colIndexes, knimeBridge);
 				} catch (ZMQException | ProtocolException
 						| CellProfilerException | PipelineException e) {
 					throw new RuntimeException(e.getMessage(), e);
@@ -251,9 +238,9 @@ public class CellProfilerInstance {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private DataCell[] createCells(final DataRow row,
+	private static DataCell[] createCells(final DataRow row,
 			final DataTableSpec inSpec,
-			final Pair<String, String>[] imageColumns, final int[] colIndexes)
+			final Pair<String, String>[] imageColumns, final int[] colIndexes, final IKnimeBridge knimeBridge)
 			throws ProtocolException, ZMQException, CellProfilerException,
 			PipelineException {
 		Map<String, ImgPlus<?>> images = new HashMap<String, ImgPlus<?>>();
@@ -263,9 +250,9 @@ public class CellProfilerInstance {
 			images.put(imageColumns[i].getFirst(), new ImgPlus(value
 					.getImgPlus().getImg()));
 		}
-		m_knimeBridge.run(images);
+		knimeBridge.run(images);
 		CellProfilerCell cell = new CellProfilerCell(
-				createCellProfilerContent());
+				createCellProfilerContent(knimeBridge));
 		return new DataCell[] { cell };
 	}
 

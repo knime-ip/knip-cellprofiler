@@ -4,6 +4,8 @@ import javax.swing.Icon;
 
 import org.knime.core.data.DataValue;
 import org.knime.core.data.ExtensibleUtilityFactory;
+import org.knime.core.data.renderer.DataValueRendererFactory;
+import org.knime.core.data.renderer.StringValueRenderer;
 
 public interface CellProfilerValue extends DataValue {
 
