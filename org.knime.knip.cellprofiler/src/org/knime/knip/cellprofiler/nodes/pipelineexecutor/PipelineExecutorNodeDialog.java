@@ -94,6 +94,8 @@ public class PipelineExecutorNodeDialog extends NodeDialogPane {
 		if (!pipelineFile.isEmpty() && new File(pipelineFile).exists()) {
 			try {
 				//CellProfilerInstance cellProfiler = new CellProfilerInstance(pipelineFile);
+				if(m_cellProfiler == null)
+					initCellProfiler();
 				m_cellProfiler.loadPipeline(pipelineFile);
 				try {
 					inputParameters = m_cellProfiler.getInputParameters();
@@ -152,15 +154,19 @@ public class PipelineExecutorNodeDialog extends NodeDialogPane {
 	
 	@Override
 	public void onOpen() {
+		initCellProfiler();
+		super.onOpen();
+	}
+	
+	private void initCellProfiler() {
 		try {
 			m_cellProfiler = new CellProfilerInstance();
 		} catch (ZMQException | IOException | ProtocolException
 				| URISyntaxException | PipelineException e1) {
 			LOGGER.error(e1.getMessage(), e1);
-		}
-		super.onOpen();
+		}		
 	}
-	
+
 	@Override
 	public void onClose() {
 		if (m_cellProfiler != null) {
