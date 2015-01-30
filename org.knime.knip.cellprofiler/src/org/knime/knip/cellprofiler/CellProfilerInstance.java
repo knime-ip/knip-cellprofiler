@@ -1,7 +1,10 @@
 package org.knime.knip.cellprofiler;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -20,7 +23,6 @@ import net.imglib2.ops.operation.iterable.unary.Max;
 import net.imglib2.ops.operation.iterable.unary.Min;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
-import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
 import org.apache.commons.io.FileUtils;
@@ -41,6 +43,7 @@ import org.knime.core.data.container.ColumnRearranger;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
+import org.knime.core.node.NodeLogger;
 import org.knime.core.util.Pair;
 import org.knime.knip.base.data.img.ImgPlusValue;
 import org.knime.knip.cellprofiler.data.CellProfilerCell;
@@ -55,6 +58,9 @@ import org.zeromq.ZMQException;
  */
 @SuppressWarnings("deprecation")
 public class CellProfilerInstance {
+
+	private static final NodeLogger LOGGER = NodeLogger
+			.getLogger(CellProfilerInstance.class);
 
 	private Process m_pythonProcess;
 
@@ -98,6 +104,8 @@ public class CellProfilerInstance {
 				cellProfilerModule, "--knime-bridge-address=tcp://127.0.0.1:"
 						+ m_port);
 		m_pythonProcess = processBuilder.start();
+		startStreamListener(m_pythonProcess.getInputStream(), false);
+		startStreamListener(m_pythonProcess.getErrorStream(), true);
 		// Connect to CellProfiler via the given port
 		m_knimeBridge.connect(new URI("tcp://127.0.0.1:" + m_port));
 	}
@@ -185,6 +193,28 @@ public class CellProfilerInstance {
 			content.addSegmentation(segmentationName, segmentation);
 		}
 		return content;
+	}
+	
+	private void startStreamListener(final InputStream stream, final boolean error) {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				BufferedReader in = new BufferedReader(new InputStreamReader(stream));
+				String line = null;
+				try {
+					while((line = in.readLine()) != null) {
+						if (error) {
+							LOGGER.error(line);
+						} else {
+							LOGGER.debug(line);
+						}
+					}
+				} catch (IOException e) {
+					// Once the process is killed the stream will be closed and we will end here
+				}
+			}
+		}).start();
+		
 	}
 
 	/**
