@@ -9,8 +9,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
-
 public class CellProfilerContent implements Serializable {
 
 	private static final long serialVersionUID = 7735517345148180658L;
