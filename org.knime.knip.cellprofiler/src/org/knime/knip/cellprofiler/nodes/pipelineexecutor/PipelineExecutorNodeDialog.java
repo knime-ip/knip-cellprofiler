@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -12,9 +14,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JPanel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import org.cellprofiler.knimebridge.PipelineException;
 import org.cellprofiler.knimebridge.ProtocolException;
@@ -54,15 +55,16 @@ public class PipelineExecutorNodeDialog extends NodeDialogPane {
 	private String[] m_inputParameters = new String[0];
 	
 	private CellProfilerInstance m_cellProfiler;
+	
+	private JButton m_update = new JButton("Update");
 
 	/**
 	 * Constructor.
 	 */
 	public PipelineExecutorNodeDialog() {
-		// Update column selection if the pipeline file changes
-		m_pipelineFile.addChangeListener(new ChangeListener() {
+		m_update.addActionListener(new ActionListener() {
 			@Override
-			public void stateChanged(ChangeEvent e) {
+			public void actionPerformed(ActionEvent e) {
 				pipelineFileChanged();
 			}
 		});
@@ -76,6 +78,9 @@ public class PipelineExecutorNodeDialog extends NodeDialogPane {
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		m_panel.add(m_pipelineFile, gbc);
+		gbc.gridy++;
+		gbc.fill = GridBagConstraints.NONE;
+		m_panel.add(m_update, gbc);
 		// We put the panel into a border layout panel to keep it from being
 		// centered
 		JPanel outerPanel = new JPanel(new BorderLayout());
@@ -93,15 +98,11 @@ public class PipelineExecutorNodeDialog extends NodeDialogPane {
 		String pipelineFile = m_pipelineFile.getSelectedFile();
 		if (!pipelineFile.isEmpty() && new File(pipelineFile).exists()) {
 			try {
-				//CellProfilerInstance cellProfiler = new CellProfilerInstance(pipelineFile);
-				if(m_cellProfiler == null)
+				if (m_cellProfiler == null) {
 					initCellProfiler();
-				m_cellProfiler.loadPipeline(pipelineFile);
-				try {
-					inputParameters = m_cellProfiler.getInputParameters();
-				} finally {
-					//cellProfiler.close();
 				}
+				m_cellProfiler.loadPipeline(pipelineFile);
+				inputParameters = m_cellProfiler.getInputParameters();
 			} catch (ZMQException | PipelineException | ProtocolException | IOException e) {
 				LOGGER.error(e.getMessage(), e);
 			}
@@ -129,6 +130,7 @@ public class PipelineExecutorNodeDialog extends NodeDialogPane {
 				gbc.anchor = GridBagConstraints.NORTHWEST;
 				gbc.fill = GridBagConstraints.BOTH;
 				gbc.weightx = 1;
+				gbc.gridwidth = 1;
 				gbc.gridx = 0;
 				gbc.gridy = m_panel.getComponentCount();
 				for (int i = 0; i < inputParameters.length; i++) {
@@ -152,12 +154,6 @@ public class PipelineExecutorNodeDialog extends NodeDialogPane {
 		m_panel.repaint();
 	}
 	
-	@Override
-	public void onOpen() {
-		initCellProfiler();
-		super.onOpen();
-	}
-	
 	private void initCellProfiler() {
 		try {
 			m_cellProfiler = new CellProfilerInstance();
@@ -171,6 +167,7 @@ public class PipelineExecutorNodeDialog extends NodeDialogPane {
 	public void onClose() {
 		if (m_cellProfiler != null) {
 			m_cellProfiler.close();
+			m_cellProfiler = null;
 		}
 		super.onClose();
 	}
@@ -193,9 +190,6 @@ public class PipelineExecutorNodeDialog extends NodeDialogPane {
 			m_imageColumns.get(i).setSelectedColumn(imageColumns[i]);
 		}
 		m_pipelineFile.setSelectedFile(config.getPipelineFile());
-		// Setting the file does not trigger the changed callback, so we do it
-		// manually
-		pipelineFileChanged();
 	}
 
 	/**
