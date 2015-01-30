@@ -294,6 +294,7 @@ public class CellProfilerInstance {
 			final Pair<String, String>[] imageColumns, final int[] colIndexes,
 			final IKnimeBridge knimeBridge) throws ProtocolException,
 			ZMQException, CellProfilerException, PipelineException {
+		boolean group = false;
 		Map<String, ImgPlus<?>> images = new HashMap<String, ImgPlus<?>>();
 		for (int i = 0; i < colIndexes.length; i++) {
 			final ImgPlusValue<T> value = (ImgPlusValue<T>) row
@@ -315,7 +316,6 @@ public class CellProfilerInstance {
 				} catch (IncompatibleTypeException e) {
 					throw new RuntimeException(e);
 				}
-				knimeBridge.run(images);
 			} else {
 				try {
 					images.put(
@@ -327,9 +327,13 @@ public class CellProfilerInstance {
 				} catch (IncompatibleTypeException e) {
 					throw new RuntimeException(e);
 				}
-
-				knimeBridge.runGroup(images);
+				group = true;
 			}
+		}
+		if (group) {
+			knimeBridge.runGroup(images);
+		} else {
+			knimeBridge.run(images);
 		}
 
 		CellProfilerCell cell = new CellProfilerCell(
