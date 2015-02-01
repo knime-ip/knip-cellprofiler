@@ -1,0 +1,18 @@
+<!DOCTYPE knimeNode PUBLIC "-//UNIKN//DTD KNIME Node 2.0//EN" "http://www.knime.org/Node.dtd">
+<knimeNode icon="cellprofiler.png" type="Manipulator">
+	<name>CellProfiler Pipeline Executor</name>
+	<shortDescription>
+		Lets you execute a CellProfiler pipeline on images in a table.
+	</shortDescription>
+	<fullDescription>
+		<intro>
+			Lets you execute a CellProfiler pipeline on images in a table.
+		</intro>
+		<option name="Pipeline file">The pipeline file to execute.</option>
+		<option name="Image selection">The image to be used.</option>
+	</fullDescription>
+	<ports>
+		<inPort index="0" name="Images">Table containing images.</inPort>
+		<outPort index="0" name="Image metrics">Metrics calculated by the CellProfiler pipeline.</outPort>
+	</ports>
+</knimeNode>
