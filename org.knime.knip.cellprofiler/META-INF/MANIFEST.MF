@@ -12,7 +12,7 @@ Require-Bundle: org.knime.base;bundle-version="[2.11.1,3.0.0)",
  imglib2;bundle-version="2.2.0",
  org.apache.commons.lang3;bundle-version="3.2.1",
  scijava-common;bundle-version="2.36.0",
- knip-imglib2-ops;bundle-version="0.1.4"
+ knip-tmp-imglib2-ops;bundle-version="0.1.4"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ClassPath: knip_cellprofiler.jar,
  lib/knime-bridge-0.0.1-SNAPSHOT.jar,
