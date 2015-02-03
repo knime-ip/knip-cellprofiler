@@ -28,6 +28,12 @@
               factory-class="org.knime.knip.cellprofiler.nodes.pipelineexecutor.PipelineExecutorNodeFactory"
               id="org.knime.knip.cellprofiler.nodes.pipelineexecutor.PipelineExecutorNodeFactory">
         </node>
+        <node
+              category-path="/community/knip/cellprofiler"
+              expert-flag="false"
+              factory-class="org.knime.knip.cellprofiler.nodes.contentexpander.MeasurementToTableNodeFactory"
+              id="org.knime.knip.cellprofiler.nodes.contentexpander.MeasurementToTableNodeFactory">
+        </node>
      </extension>
    <extension
          point="org.knime.core.DataValueRenderer">
