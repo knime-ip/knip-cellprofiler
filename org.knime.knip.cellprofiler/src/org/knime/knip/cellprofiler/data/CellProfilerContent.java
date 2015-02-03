@@ -1,9 +1,10 @@
 package org.knime.knip.cellprofiler.data;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
+
+import org.knime.core.data.DataCellDataInput;
+import org.knime.core.data.DataCellDataOutput;
 
 public class CellProfilerContent implements Serializable {
 
@@ -11,12 +12,16 @@ public class CellProfilerContent implements Serializable {
 
 	private final String parentKey;
 
-	private final CellProfilerMeasurement measurement;
+	private final CellProfilerMeasurementTable measurement;
+
+	private boolean isImageMeasurement;
 
 	public CellProfilerContent(final String parentKey,
-			final CellProfilerMeasurement measurement) {
+			final CellProfilerMeasurementTable measurement,
+			boolean isImageMeasurements) {
 		this.measurement = measurement;
 		this.parentKey = parentKey;
+		this.isImageMeasurement = isImageMeasurements;
 	}
 
 	@Override
@@ -35,6 +40,13 @@ public class CellProfilerContent implements Serializable {
 		return measurement.equals(((CellProfilerContent) obj).measurement);
 	}
 
+	/**
+	 * @return measurements for this content
+	 */
+	public CellProfilerMeasurementTable getMeasurement() {
+		return measurement;
+	}
+
 	@Override
 	public String toString() {
 		return parentKey + "#" + measurement.toString();
@@ -44,15 +56,20 @@ public class CellProfilerContent implements Serializable {
 		return parentKey;
 	}
 
-	public void save(final DataOutput output) throws IOException {
-		output.writeUTF(parentKey);
-		measurement.save(output);
+	public boolean isImageMeasurement() {
+		return isImageMeasurement;
 	}
 
-	public static CellProfilerContent load(final DataInput input)
-			throws IOException {
+	public void save(final DataCellDataOutput output) throws IOException {
+		output.writeUTF(parentKey);
+		measurement.save(output);
+		output.writeBoolean(isImageMeasurement);
+	}
+
+	public static CellProfilerContent load(final DataCellDataInput input)
+			throws IOException, ClassNotFoundException {
 		return new CellProfilerContent(input.readUTF(),
-				CellProfilerMeasurement.load(input));
+				CellProfilerMeasurementTable.load(input), input.readBoolean());
 	}
 
 }

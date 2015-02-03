@@ -30,6 +30,7 @@ import org.apache.commons.io.FileUtils;
 import org.cellprofiler.knimebridge.CellProfilerException;
 import org.cellprofiler.knimebridge.IFeatureDescription;
 import org.cellprofiler.knimebridge.IKnimeBridge;
+import org.cellprofiler.knimebridge.KBConstants;
 import org.cellprofiler.knimebridge.KnimeBridgeFactory;
 import org.cellprofiler.knimebridge.PipelineException;
 import org.cellprofiler.knimebridge.ProtocolException;
@@ -49,7 +50,7 @@ import org.knime.core.util.Pair;
 import org.knime.knip.base.data.img.ImgPlusValue;
 import org.knime.knip.cellprofiler.data.CellProfilerCell;
 import org.knime.knip.cellprofiler.data.CellProfilerContent;
-import org.knime.knip.cellprofiler.data.CellProfilerMeasurement;
+import org.knime.knip.cellprofiler.data.CellProfilerMeasurementTable;
 import org.knime.knip.cellprofiler.nodes.pipelineexecutor.PipelineExecutorNodeConfig;
 import org.zeromq.ZMQException;
 
@@ -157,11 +158,13 @@ public class CellProfilerInstance {
 	 * @throws CanceledExecutionException
 	 */
 	public BufferedDataTable execute(ExecutionContext exec,
-			BufferedDataTable inputTable, Pair<String, String>[] imageColumns, List<String> objectNames)
-			throws IOException, ZMQException, CellProfilerException,
-			PipelineException, ProtocolException, CanceledExecutionException {
+			BufferedDataTable inputTable, Pair<String, String>[] imageColumns,
+			List<String> objectNames) throws IOException, ZMQException,
+			CellProfilerException, PipelineException, ProtocolException,
+			CanceledExecutionException {
 		ColumnRearranger colRearranger = createColumnRearranger(
-				inputTable.getDataTableSpec(), imageColumns, m_knimeBridge, objectNames);
+				inputTable.getDataTableSpec(), imageColumns, m_knimeBridge,
+				objectNames);
 		return exec.createColumnRearrangeTable(inputTable, colRearranger, exec);
 	}
 
@@ -174,7 +177,8 @@ public class CellProfilerInstance {
 
 		int i = 0;
 		for (String measurementName : measurementNames) {
-			CellProfilerMeasurement measurement = new CellProfilerMeasurement();
+			CellProfilerMeasurementTable measurement = new CellProfilerMeasurementTable(
+					parentKey);
 			for (IFeatureDescription featureDescription : knimeBridge
 					.getFeatures(measurementName)) {
 				if (featureDescription.getType().equals(Double.class)) {
@@ -201,7 +205,8 @@ public class CellProfilerInstance {
 			}
 
 			cells[i++] = new CellProfilerCell(new CellProfilerContent(
-					parentKey, measurement));
+					parentKey, measurement,
+					measurementName.equals(KBConstants.IMAGE)));
 		}
 
 		return cells;

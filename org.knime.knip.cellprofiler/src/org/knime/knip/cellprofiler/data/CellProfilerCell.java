@@ -1,6 +1,8 @@
 package org.knime.knip.cellprofiler.data;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataCellDataInput;
@@ -79,7 +81,12 @@ public class CellProfilerCell extends DataCell implements CellProfilerValue {
 		public CellProfilerCell deserialize(final DataCellDataInput input)
 				throws IOException {
 			input.readInt(); // version
-			CellProfilerContent cpc = CellProfilerContent.load(input);
+			CellProfilerContent cpc = null;
+			try {
+				cpc = CellProfilerContent.load(input);
+			} catch (ClassNotFoundException e) {
+				throw new RuntimeException("Class not found");
+			}
 			return new CellProfilerCell(cpc);
 		}
 
