@@ -53,10 +53,12 @@ public class PipelineExecutorNodeDialog extends NodeDialogPane {
 	private DataTableSpec m_spec = new DataTableSpec(new DataColumnSpec[0]);
 
 	private String[] m_inputParameters = new String[0];
-	
+
 	private CellProfilerInstance m_cellProfiler;
-	
+
 	private JButton m_update = new JButton("Update");
+
+	private List<String> m_objectNames;
 
 	/**
 	 * Constructor.
@@ -103,7 +105,9 @@ public class PipelineExecutorNodeDialog extends NodeDialogPane {
 				}
 				m_cellProfiler.loadPipeline(pipelineFile);
 				inputParameters = m_cellProfiler.getInputParameters();
-			} catch (ZMQException | PipelineException | ProtocolException | IOException e) {
+				m_objectNames = m_cellProfiler.getObjectNames();
+			} catch (ZMQException | PipelineException | ProtocolException
+					| IOException e) {
 				LOGGER.error(e.getMessage(), e);
 			}
 		}
@@ -153,14 +157,14 @@ public class PipelineExecutorNodeDialog extends NodeDialogPane {
 		m_panel.revalidate();
 		m_panel.repaint();
 	}
-	
+
 	private void initCellProfiler() {
 		try {
 			m_cellProfiler = new CellProfilerInstance();
 		} catch (ZMQException | IOException | ProtocolException
 				| URISyntaxException | PipelineException e1) {
 			LOGGER.error(e1.getMessage(), e1);
-		}		
+		}
 	}
 
 	@Override
@@ -190,6 +194,7 @@ public class PipelineExecutorNodeDialog extends NodeDialogPane {
 			m_imageColumns.get(i).setSelectedColumn(imageColumns[i]);
 		}
 		m_pipelineFile.setSelectedFile(config.getPipelineFile());
+		m_objectNames = config.getObjectNames();
 	}
 
 	/**
@@ -201,6 +206,7 @@ public class PipelineExecutorNodeDialog extends NodeDialogPane {
 		PipelineExecutorNodeConfig config = new PipelineExecutorNodeConfig();
 		config.setPipelineFile(m_pipelineFile.getSelectedFile());
 		config.setInputParameters(m_inputParameters);
+		config.setObjectNames(m_objectNames);
 		String[] imageColumns = new String[m_imageColumns.size()];
 		for (int i = 0; i < imageColumns.length; i++) {
 			imageColumns[i] = m_imageColumns.get(i).getSelectedColumn();

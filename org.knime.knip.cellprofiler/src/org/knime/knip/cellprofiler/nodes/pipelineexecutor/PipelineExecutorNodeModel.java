@@ -22,6 +22,7 @@ import org.knime.knip.cellprofiler.CellProfilerInstance;
  * CellProfiler Pipeline Executor node model.
  * 
  * @author Patrick Winter, University of Konstanz
+ * @author Christian Dietz, University of Konstanz
  */
 public class PipelineExecutorNodeModel extends NodeModel {
 
@@ -51,7 +52,7 @@ public class PipelineExecutorNodeModel extends NodeModel {
 						"The input parameters of the pipeline have changed");
 			}
 			table = cellProfiler.execute(exec, inData[0],
-					createInputParameters());
+					createInputParameters(), m_config.getObjectNames());
 		} finally {
 			cellProfiler.close();
 		}
@@ -109,7 +110,7 @@ public class PipelineExecutorNodeModel extends NodeModel {
 						+ " is not of the type image plus");
 			}
 		}
-		return new DataTableSpec[] { CellProfilerInstance.getOutputSpec(inSpecs[0], createInputParameters()) };
+		return new DataTableSpec[] { CellProfilerInstance.getOutputSpec(inSpecs[0], createInputParameters(), m_config.getObjectNames()) };
 	}
 
 	/**

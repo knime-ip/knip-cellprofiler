@@ -15,7 +15,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class CellProfilerMeasurementSet implements Serializable {
+public class CellProfilerMeasurement implements Serializable {
 
 	private static final long serialVersionUID = 1148694872280436207L;
 
@@ -94,10 +94,10 @@ public class CellProfilerMeasurementSet implements Serializable {
 		if (obj == this) {
 			return true;
 		}
-		if (!(obj instanceof CellProfilerMeasurementSet)) {
+		if (!(obj instanceof CellProfilerMeasurement)) {
 			return false;
 		}
-		final CellProfilerMeasurementSet seg = (CellProfilerMeasurementSet) obj;
+		final CellProfilerMeasurement seg = (CellProfilerMeasurement) obj;
 		if (!m_stringFeatures.equals(seg.m_stringFeatures)) {
 			return false;
 		}
@@ -170,9 +170,9 @@ public class CellProfilerMeasurementSet implements Serializable {
 		}
 	}
 
-	public static CellProfilerMeasurementSet load(final DataInput input)
+	public static CellProfilerMeasurement load(final DataInput input)
 			throws IOException {
-		CellProfilerMeasurementSet segmentation = new CellProfilerMeasurementSet();
+		CellProfilerMeasurement segmentation = new CellProfilerMeasurement();
 		int numberOfDoubleFeatures = input.readInt();
 		for (int i = 0; i < numberOfDoubleFeatures; i++) {
 			String featureName = input.readUTF();

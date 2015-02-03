@@ -11,6 +11,7 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.imagej.ImgPlus;
 import net.imglib2.RandomAccessibleInterval;
@@ -48,7 +49,8 @@ import org.knime.core.util.Pair;
 import org.knime.knip.base.data.img.ImgPlusValue;
 import org.knime.knip.cellprofiler.data.CellProfilerCell;
 import org.knime.knip.cellprofiler.data.CellProfilerContent;
-import org.knime.knip.cellprofiler.data.CellProfilerMeasurementSet;
+import org.knime.knip.cellprofiler.data.CellProfilerMeasurement;
+import org.knime.knip.cellprofiler.nodes.pipelineexecutor.PipelineExecutorNodeConfig;
 import org.zeromq.ZMQException;
 
 /**
@@ -127,11 +129,13 @@ public class CellProfilerInstance {
 	/**
 	 * @return Spec of the output produced by the pipeline.
 	 */
-	public static DataTableSpec getOutputSpec(DataTableSpec inSpec,
-			Pair<String, String>[] imageColumns) {
+	public static DataTableSpec getOutputSpec(final DataTableSpec inSpec,
+			final Pair<String, String>[] imageColumns,
+			final List<String> objectNames) {
 		// Passing null to createColumnRearranger will cause an NPE if we use it
 		// for more than the spec
-		return createColumnRearranger(inSpec, imageColumns, null).createSpec();
+		return createColumnRearranger(inSpec, imageColumns, null, objectNames)
+				.createSpec();
 	}
 
 	/**
@@ -153,46 +157,54 @@ public class CellProfilerInstance {
 	 * @throws CanceledExecutionException
 	 */
 	public BufferedDataTable execute(ExecutionContext exec,
-			BufferedDataTable inputTable, Pair<String, String>[] imageColumns)
+			BufferedDataTable inputTable, Pair<String, String>[] imageColumns, List<String> objectNames)
 			throws IOException, ZMQException, CellProfilerException,
 			PipelineException, ProtocolException, CanceledExecutionException {
 		ColumnRearranger colRearranger = createColumnRearranger(
-				inputTable.getDataTableSpec(), imageColumns, m_knimeBridge);
+				inputTable.getDataTableSpec(), imageColumns, m_knimeBridge, objectNames);
 		return exec.createColumnRearrangeTable(inputTable, colRearranger, exec);
 	}
 
-	private static CellProfilerContent createCellProfilerContent(
+	private static CellProfilerCell[] createCellProfilerContentCell(
 			final String parentKey, final IKnimeBridge knimeBridge) {
-		CellProfilerContent content = new CellProfilerContent(parentKey);
-		for (String measurementName : knimeBridge.getObjectNames()) {
-			CellProfilerMeasurementSet segmentation = new CellProfilerMeasurementSet();
+
+		final List<String> measurementNames = knimeBridge.getObjectNames();
+		final CellProfilerCell[] cells = new CellProfilerCell[measurementNames
+				.size()];
+
+		int i = 0;
+		for (String measurementName : measurementNames) {
+			CellProfilerMeasurement measurement = new CellProfilerMeasurement();
 			for (IFeatureDescription featureDescription : knimeBridge
 					.getFeatures(measurementName)) {
 				if (featureDescription.getType().equals(Double.class)) {
 					double[] values = knimeBridge
 							.getDoubleMeasurements((IFeatureDescription) featureDescription);
-					segmentation.addDoubleFeature(featureDescription.getName(),
+					measurement.addDoubleFeature(featureDescription.getName(),
 							values);
 				} else if (featureDescription.getType().equals(Float.class)) {
 					float[] values = knimeBridge
 							.getFloatMeasurements((IFeatureDescription) featureDescription);
-					segmentation.addFloatFeature(featureDescription.getName(),
+					measurement.addFloatFeature(featureDescription.getName(),
 							values);
 				} else if (featureDescription.getType().equals(Integer.class)) {
 					int[] values = knimeBridge
 							.getIntMeasurements((IFeatureDescription) featureDescription);
-					segmentation.addIntegerFeature(
-							featureDescription.getName(), values);
+					measurement.addIntegerFeature(featureDescription.getName(),
+							values);
 				} else if (featureDescription.getType().equals(String.class)) {
 					String value = knimeBridge
 							.getStringMeasurement((IFeatureDescription) featureDescription);
-					segmentation.addStringFeature(featureDescription.getName(),
+					measurement.addStringFeature(featureDescription.getName(),
 							value);
 				}
 			}
-			content.addMeasurement(measurementName, segmentation);
+
+			cells[i++] = new CellProfilerCell(new CellProfilerContent(
+					parentKey, measurement));
 		}
-		return content;
+
+		return cells;
 	}
 
 	private void startStreamListener(final InputStream stream,
@@ -260,16 +272,28 @@ public class CellProfilerInstance {
 		return port;
 	}
 
+	/**
+	 * @return number of output measurements
+	 */
+	public List<String> getObjectNames() {
+		return m_knimeBridge.getObjectNames();
+	}
+
 	private static ColumnRearranger createColumnRearranger(
 			final DataTableSpec inSpec,
 			final Pair<String, String>[] imageColumns,
-			final IKnimeBridge knimeBridge) {
-		ColumnRearranger rearranger = new ColumnRearranger(inSpec);
-		DataColumnSpec[] colSpecs = new DataColumnSpec[1];
-		String columnName = DataTableSpec.getUniqueColumnName(inSpec,
-				"CellProfiler Measurements");
-		colSpecs[0] = new DataColumnSpecCreator(columnName,
-				CellProfilerCell.TYPE).createSpec();
+			final IKnimeBridge knimeBridge, final List<String> objectNames) {
+
+		final ColumnRearranger rearranger = new ColumnRearranger(inSpec);
+		final DataColumnSpec[] colSpecs = new DataColumnSpec[objectNames.size()];
+		int k = 0;
+		for (final String colName : objectNames) {
+			final String columnName = DataTableSpec.getUniqueColumnName(inSpec,
+					"CellProfiler Measurements: [" + colName + "]");
+			colSpecs[k++] = new DataColumnSpecCreator(columnName,
+					CellProfilerCell.TYPE).createSpec();
+		}
+
 		final int[] colIndexes = new int[imageColumns.length];
 		for (int i = 0; i < imageColumns.length; i++) {
 			colIndexes[i] = inSpec.findColumnIndex(imageColumns[i].getSecond());
@@ -339,9 +363,8 @@ public class CellProfilerInstance {
 			knimeBridge.run(images);
 		}
 
-		CellProfilerCell cell = new CellProfilerCell(createCellProfilerContent(
-				row.getKey().getString(), knimeBridge));
-		return new DataCell[] { cell };
+		return createCellProfilerContentCell(row.getKey().getString(),
+				knimeBridge);
 	}
 
 	/**

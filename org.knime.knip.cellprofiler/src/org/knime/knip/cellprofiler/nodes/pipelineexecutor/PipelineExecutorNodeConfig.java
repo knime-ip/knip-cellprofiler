@@ -1,5 +1,8 @@
 package org.knime.knip.cellprofiler.nodes.pipelineexecutor;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
@@ -23,6 +26,10 @@ public class PipelineExecutorNodeConfig {
 
 	private String[] m_inputParameters = new String[0];
 
+	private static final String OBJECT_NAMES_CONFIG = "numMeasurements";
+
+	private String[] m_objectNames;
+
 	/**
 	 * Loads previously saved node settings.
 	 * 
@@ -36,6 +43,7 @@ public class PipelineExecutorNodeConfig {
 		m_pipelineFile = settings.getString(PIPELINE_FILE_CFG);
 		m_imageColumns = settings.getStringArray(IMAGE_COLUMNS_CFG);
 		m_inputParameters = settings.getStringArray(INPUT_PARAMETERS_CFG);
+		m_objectNames = settings.getStringArray(OBJECT_NAMES_CONFIG);
 	}
 
 	/**
@@ -50,6 +58,7 @@ public class PipelineExecutorNodeConfig {
 				new String[0]);
 		m_inputParameters = settings.getStringArray(INPUT_PARAMETERS_CFG,
 				new String[0]);
+		m_objectNames = settings.getStringArray(OBJECT_NAMES_CONFIG, new String[0]);
 	}
 
 	/**
@@ -62,6 +71,7 @@ public class PipelineExecutorNodeConfig {
 		settings.addString(PIPELINE_FILE_CFG, m_pipelineFile);
 		settings.addStringArray(IMAGE_COLUMNS_CFG, m_imageColumns);
 		settings.addStringArray(INPUT_PARAMETERS_CFG, m_inputParameters);
+		settings.addStringArray(OBJECT_NAMES_CONFIG, m_objectNames);
 	}
 
 	/**
@@ -105,8 +115,26 @@ public class PipelineExecutorNodeConfig {
 	 * @param inputParameters
 	 *            The input parameters.
 	 */
-	public void setInputParameters(String[] inputParameters) {
+	public void setInputParameters(final String[] inputParameters) {
 		m_inputParameters = inputParameters;
 	}
 
+	/**
+	 * @return number of measurements output from this screen
+	 */
+	public List<String> getObjectNames() {
+		if (m_objectNames == null)
+			return null;
+		else
+			return Arrays.asList(m_objectNames);
+	}
+
+	/**
+	 * @param objectNames
+	 *            number of measurement outputs of this pipeline
+	 */
+	public void setObjectNames(final List<String> objectNames) {
+		this.m_objectNames = objectNames
+				.toArray(new String[objectNames.size()]);
+	}
 }
