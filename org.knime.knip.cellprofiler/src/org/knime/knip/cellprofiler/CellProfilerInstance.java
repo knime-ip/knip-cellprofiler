@@ -223,7 +223,7 @@ public class CellProfilerInstance {
 				try {
 					while ((line = in.readLine()) != null) {
 						if (error) {
-							LOGGER.error(line);
+							LOGGER.warn(line);
 						} else {
 							LOGGER.debug(line);
 						}
