@@ -19,11 +19,11 @@ import net.imglib2.converter.Converters;
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.Img;
 import net.imglib2.img.ImgView;
-import net.imglib2.ops.operation.iterable.unary.Max;
-import net.imglib2.ops.operation.iterable.unary.Min;
+import net.imglib2.ops.operation.Operations;
+import net.imglib2.ops.operation.iterableinterval.unary.MinMax;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
-import net.imglib2.view.Views;
+import net.imglib2.util.ValuePair;
 
 import org.apache.commons.io.FileUtils;
 import org.cellprofiler.knimebridge.CellProfilerException;
@@ -48,7 +48,7 @@ import org.knime.core.util.Pair;
 import org.knime.knip.base.data.img.ImgPlusValue;
 import org.knime.knip.cellprofiler.data.CellProfilerCell;
 import org.knime.knip.cellprofiler.data.CellProfilerContent;
-import org.knime.knip.cellprofiler.data.CellProfilerSegmentation;
+import org.knime.knip.cellprofiler.data.CellProfilerMeasurementSet;
 import org.zeromq.ZMQException;
 
 /**
@@ -162,12 +162,12 @@ public class CellProfilerInstance {
 	}
 
 	private static CellProfilerContent createCellProfilerContent(
-			final IKnimeBridge knimeBridge) {
-		CellProfilerContent content = new CellProfilerContent();
-		for (String segmentationName : knimeBridge.getObjectNames()) {
-			CellProfilerSegmentation segmentation = new CellProfilerSegmentation();
+			final String parentKey, final IKnimeBridge knimeBridge) {
+		CellProfilerContent content = new CellProfilerContent(parentKey);
+		for (String measurementName : knimeBridge.getObjectNames()) {
+			CellProfilerMeasurementSet segmentation = new CellProfilerMeasurementSet();
 			for (IFeatureDescription featureDescription : knimeBridge
-					.getFeatures(segmentationName)) {
+					.getFeatures(measurementName)) {
 				if (featureDescription.getType().equals(Double.class)) {
 					double[] values = knimeBridge
 							.getDoubleMeasurements((IFeatureDescription) featureDescription);
@@ -190,19 +190,21 @@ public class CellProfilerInstance {
 							value);
 				}
 			}
-			content.addSegmentation(segmentationName, segmentation);
+			content.addMeasurement(measurementName, segmentation);
 		}
 		return content;
 	}
-	
-	private void startStreamListener(final InputStream stream, final boolean error) {
+
+	private void startStreamListener(final InputStream stream,
+			final boolean error) {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				BufferedReader in = new BufferedReader(new InputStreamReader(stream));
+				BufferedReader in = new BufferedReader(new InputStreamReader(
+						stream));
 				String line = null;
 				try {
-					while((line = in.readLine()) != null) {
+					while ((line = in.readLine()) != null) {
 						if (error) {
 							LOGGER.error(line);
 						} else {
@@ -210,11 +212,12 @@ public class CellProfilerInstance {
 						}
 					}
 				} catch (IOException e) {
-					// Once the process is killed the stream will be closed and we will end here
+					// Once the process is killed the stream will be closed and
+					// we will end here
 				}
 			}
 		}).start();
-		
+
 	}
 
 	/**
@@ -264,7 +267,7 @@ public class CellProfilerInstance {
 		ColumnRearranger rearranger = new ColumnRearranger(inSpec);
 		DataColumnSpec[] colSpecs = new DataColumnSpec[1];
 		String columnName = DataTableSpec.getUniqueColumnName(inSpec,
-				"CellProfiler measurements");
+				"CellProfiler Measurements");
 		colSpecs[0] = new DataColumnSpecCreator(columnName,
 				CellProfilerCell.TYPE).createSpec();
 		final int[] colIndexes = new int[imageColumns.length];
@@ -336,34 +339,31 @@ public class CellProfilerInstance {
 			knimeBridge.run(images);
 		}
 
-		CellProfilerCell cell = new CellProfilerCell(
-				createCellProfilerContent(knimeBridge));
+		CellProfilerCell cell = new CellProfilerCell(createCellProfilerContent(
+				row.getKey().getString(), knimeBridge));
 		return new DataCell[] { cell };
 	}
 
 	/**
 	 * Helper to convert pixels of images to floats in range [0..1]
 	 * 
-	 * @author Patrick Winter, University of Konstanz
+	 * @author Christian Dietz, University of Konstanz
 	 *
 	 * @param <T>
 	 */
 	static class FloatConverter<T extends RealType<T>> implements
 			Converter<T, FloatType> {
 
-		private double max;
-		private double min;
+		private final double max;
+		private final double min;
 
 		public FloatConverter(final Img<T> input) {
 
-			final T min = input.firstElement().createVariable();
-			final T max = input.firstElement().createVariable();
+			final ValuePair<T, T> res = Operations.compute(new MinMax<T>(),
+					input);
 
-			new Min<T, T>().compute(Views.iterable(input).cursor(), min);
-			new Max<T, T>().compute(Views.iterable(input).cursor(), max);
-
-			this.min = min.getRealDouble();
-			this.max = max.getRealDouble();
+			this.min = res.getA().getRealDouble();
+			this.max = res.getB().getRealDouble();
 		}
 
 		@Override

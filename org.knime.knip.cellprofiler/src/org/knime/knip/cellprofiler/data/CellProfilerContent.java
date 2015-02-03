@@ -13,25 +13,31 @@ public class CellProfilerContent implements Serializable {
 
 	private static final long serialVersionUID = 7735517345148180658L;
 
-	private Map<String, CellProfilerSegmentation> m_segmentations = new HashMap<String, CellProfilerSegmentation>();
+	private final Map<String, CellProfilerMeasurementSet> measurements;
 
-	public void addSegmentation(final String segmentationName,
-			final CellProfilerSegmentation segmentation) {
-		m_segmentations.put(segmentationName, segmentation);
+	private final String parentKey;
+
+	public CellProfilerContent(final String parentKey) {
+		this.parentKey = parentKey;
+		this.measurements = new HashMap<String, CellProfilerMeasurementSet>();
 	}
 
-	public Set<String> getSegmentations() {
-		return m_segmentations.keySet();
+	public void addMeasurement(final String measurementName,
+			final CellProfilerMeasurementSet measurement) {
+		measurements.put(measurementName, measurement);
 	}
 
-	public CellProfilerSegmentation getSegmentation(
-			final String segmantationName) {
-		return m_segmentations.get(segmantationName);
+	public Set<String> getMeasurements() {
+		return measurements.keySet();
+	}
+
+	public CellProfilerMeasurementSet getMeasurements(final String measurement) {
+		return measurements.get(measurement);
 	}
 
 	@Override
 	public int hashCode() {
-		return m_segmentations.hashCode();
+		return measurements.hashCode();
 	}
 
 	@Override
@@ -42,18 +48,23 @@ public class CellProfilerContent implements Serializable {
 		if (!(obj instanceof CellProfilerContent)) {
 			return false;
 		}
-		return m_segmentations
-				.equals(((CellProfilerContent) obj).m_segmentations);
+		return measurements
+				.equals(((CellProfilerContent) obj).measurements);
 	}
 
 	@Override
 	public String toString() {
-		return m_segmentations.toString();
+		return parentKey + "#" + measurements.toString();
 	}
-
+	
+	public String getParentKey() {
+		return parentKey;
+	}
+	
 	public void save(final DataOutput output) throws IOException {
-		output.writeInt(m_segmentations.size());
-		for (Entry<String, CellProfilerSegmentation> entry : m_segmentations
+		output.writeUTF(parentKey);
+		output.writeInt(measurements.size());
+		for (Entry<String, CellProfilerMeasurementSet> entry : measurements
 				.entrySet()) {
 			output.writeUTF(entry.getKey());
 			entry.getValue().save(output);
@@ -62,13 +73,14 @@ public class CellProfilerContent implements Serializable {
 
 	public static CellProfilerContent load(final DataInput input)
 			throws IOException {
-		CellProfilerContent content = new CellProfilerContent();
-		int numberOfSegmentations = input.readInt();
-		for (int i = 0; i < numberOfSegmentations; i++) {
-			String segmentationName = input.readUTF();
-			CellProfilerSegmentation segmentation = CellProfilerSegmentation
+		String parentKey = input.readUTF();
+		CellProfilerContent content = new CellProfilerContent(parentKey);
+		int numberOfMeasurements = input.readInt();
+		for (int i = 0; i < numberOfMeasurements; i++) {
+			String measurementNamenName = input.readUTF();
+			CellProfilerMeasurementSet measurement = CellProfilerMeasurementSet
 					.load(input);
-			content.addSegmentation(segmentationName, segmentation);
+			content.addMeasurement(measurementNamenName, measurement);
 		}
 		return content;
 	}

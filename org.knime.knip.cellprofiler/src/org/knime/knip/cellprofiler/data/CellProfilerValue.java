@@ -33,7 +33,7 @@ public interface CellProfilerValue extends DataValue {
 		 */
 		@Override
 		public String getName() {
-			return "CellProfiler measurements";
+			return "CellProfiler Measurements";
 		}
 	}
 
