@@ -191,24 +191,36 @@ public class CellProfilerMeasurementTable implements Serializable {
 
 	@Override
 	public int hashCode() {
-		HashCodeBuilder hcb = new HashCodeBuilder();
-		hcb.append(outSpec);
-		hcb.append(dataAsColumns);
-		return super.hashCode();
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + numRows;
+		result = prime * result + ((outSpec == null) ? 0 : outSpec.hashCode());
+		result = prime * result
+				+ ((parentKey == null) ? 0 : parentKey.hashCode());
+		return result;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj == this) {
+		if (this == obj)
 			return true;
-		}
-		if (!(obj instanceof CellProfilerMeasurementTable)) {
+		if (obj == null)
 			return false;
-		}
-		final CellProfilerMeasurementTable seg = (CellProfilerMeasurementTable) obj;
-
-		// FIXME: Implement
-
+		if (getClass() != obj.getClass())
+			return false;
+		final CellProfilerMeasurementTable other = (CellProfilerMeasurementTable) obj;
+		if (numRows != other.numRows)
+			return false;
+		if (outSpec == null) {
+			if (other.outSpec != null)
+				return false;
+		} else if (!outSpec.equals(other.outSpec))
+			return false;
+		if (parentKey == null) {
+			if (other.parentKey != null)
+				return false;
+		} else if (!parentKey.equals(other.parentKey))
+			return false;
 		return true;
 	}
 
