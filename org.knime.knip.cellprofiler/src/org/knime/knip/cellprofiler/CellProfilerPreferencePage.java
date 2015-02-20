@@ -47,6 +47,8 @@
  */
 package org.knime.knip.cellprofiler;
 
+import java.io.File;
+
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
@@ -88,9 +90,30 @@ public class CellProfilerPreferencePage extends PreferencePage implements
 	 * 
 	 * @return Path to the CellProfiler module
 	 */
-	public static String getPath() {
-		return Platform.getPreferencesService().getString(
+	public static String[] getCellProfilerCommand() {
+
+		final String path = Platform.getPreferencesService().getString(
 				"org.knime.knip.cellprofiler", "path", DEFAULT_PATH, null);
+
+		final String[] command = new String[2];
+		final String OS = System.getProperty("os.name", "generic");
+
+		if ((OS.indexOf("mac") >= 0) || (OS.indexOf("darwin") >= 0)) {
+			command[0] = "";
+			command[1] = path;
+		} else if (OS.indexOf("win") >= 0) {
+			command[0] = "";
+			command[1] = path + "CellProfiler.exe";
+		} else if (OS.indexOf("nux") >= 0) {
+			command[0] = "python";
+			command[1] = path + "CellProfiler.py";
+		} else if (!path.endsWith("/")) {
+			// we hope for python
+			command[0] = "python";
+			command[1] = path + "CellProfiler.py";
+		}
+
+		return command;
 	}
 
 	private static String doAutoGuessCellProfilerPath() {
@@ -98,9 +121,9 @@ public class CellProfilerPreferencePage extends PreferencePage implements
 		if ((OS.indexOf("mac") >= 0) || (OS.indexOf("darwin") >= 0)) {
 			return "/Applications/CellProfiler.app";
 		} else if (OS.indexOf("win") >= 0) {
-			return "C:\\Program Files\\CellProfiler";
+			return "C:\\Program Files\\CellProfiler/";
 		} else if (OS.indexOf("nux") >= 0) {
-			return "/usr/bin/cellprofiler";
+			return "/usr/bin/cellprofiler/";
 		} else {
 			return "";
 		}
@@ -119,7 +142,7 @@ public class CellProfilerPreferencePage extends PreferencePage implements
 	 */
 	@Override
 	public boolean performOk() {
-		setPath(m_pathEditor.getStringValue());
+		performApply();
 		return true;
 	}
 
@@ -128,7 +151,36 @@ public class CellProfilerPreferencePage extends PreferencePage implements
 	 */
 	@Override
 	protected void performApply() {
-		setPath(m_pathEditor.getStringValue());
+		if (!new File(m_pathEditor.getStringValue()).exists()) {
+			throw new IllegalArgumentException(
+					"Path to CellProfiler does not exist! Please select the installation directory of CellProfiler.");
+		}
+
+		if (!new File(m_pathEditor.getStringValue()).isDirectory()) {
+			throw new IllegalArgumentException(
+					"Path to CellProfiler is not a directory! Please select the installation directory of CellProfiler.");
+		}
+
+		String path = m_pathEditor.getStringValue();
+
+		final String OS = System.getProperty("os.name", "generic");
+		if ((OS.indexOf("mac") >= 0) || (OS.indexOf("darwin") >= 0)) {
+			if (!path.endsWith("/")) {
+				path += "/";
+			}
+		} else if (OS.indexOf("win") >= 0) {
+			if (!path.endsWith("\\")) {
+				path += "\\";
+			}
+		} else if (OS.indexOf("nux") >= 0) {
+			if (!path.endsWith("/")) {
+				path += "/";
+			}
+		} else if (!path.endsWith("/")) {
+			path += "/";
+		}
+
+		setPath(path);
 	}
 
 	/**
@@ -148,8 +200,9 @@ public class CellProfilerPreferencePage extends PreferencePage implements
 		m_container = new Composite(m_sc, SWT.NONE);
 		m_container.setLayout(new GridLayout());
 		m_pathEditor = new FileFieldEditor("org.knime.knip.cellprofiler",
-				"Path to CellProfiler module", m_container);
-		m_pathEditor.setStringValue(getPath());
+				"Path to CellProfiler Installation", m_container);
+		m_pathEditor.setStringValue(Platform.getPreferencesService().getString(
+				"org.knime.knip.cellprofiler", "path", DEFAULT_PATH, null));
 		GridData gridData = new GridData();
 		gridData.horizontalSpan = 3;
 		gridData = new GridData();

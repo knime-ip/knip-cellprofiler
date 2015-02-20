@@ -68,7 +68,7 @@ public class CellProfilerInstance {
 
 	private static Interval[] m_reference;
 
-	private Process m_pythonProcess;
+	private Process m_cellProfilerProcess;
 
 	private boolean closed = false;
 
@@ -91,27 +91,20 @@ public class CellProfilerInstance {
 	public CellProfilerInstance() throws IOException, ZMQException,
 			ProtocolException, URISyntaxException, PipelineException {
 		// Do some error checks on the configured module path
-		String cellProfilerModule = CellProfilerPreferencePage.getPath();
-		if (cellProfilerModule.isEmpty()) {
-			throw new IOException("Path to CellProfiler module not set");
-		}
-		if (!new File(cellProfilerModule).exists()) {
-			throw new IOException("CellProfiler module " + cellProfilerModule
-					+ " does not exist");
-		}
-		if (new File(cellProfilerModule).isDirectory()) {
-			throw new IOException("CellProfiler module path "
-					+ cellProfilerModule + " is a directory");
-		}
+		final String[] cellProfilerCommand = CellProfilerPreferencePage
+				.getCellProfilerCommand();
+
 		// Get a free port for communication with CellProfiler
 		m_port = getFreePort();
 		// Start CellProfiler
-		ProcessBuilder processBuilder = new ProcessBuilder("python",
-				cellProfilerModule, "--knime-bridge-address=tcp://127.0.0.1:"
-						+ m_port);
-		m_pythonProcess = processBuilder.start();
-		startStreamListener(m_pythonProcess.getInputStream(), false);
-		startStreamListener(m_pythonProcess.getErrorStream(), true);
+		ProcessBuilder processBuilder = new ProcessBuilder(
+				cellProfilerCommand[0], cellProfilerCommand[1],
+				"--knime-bridge-address=tcp://127.0.0.1:" + m_port);
+		m_cellProfilerProcess = processBuilder.start();
+
+		startStreamListener(m_cellProfilerProcess.getInputStream(), false);
+		startStreamListener(m_cellProfilerProcess.getErrorStream(), true);
+
 		// Connect to CellProfiler via the given port
 		m_knimeBridge.connect(new URI("tcp://127.0.0.1:" + m_port));
 	}
@@ -248,7 +241,7 @@ public class CellProfilerInstance {
 		if (!closed) {
 			closed = true;
 			m_knimeBridge.disconnect();
-			m_pythonProcess.destroy();
+			m_cellProfilerProcess.destroy();
 		}
 	}
 
@@ -336,7 +329,7 @@ public class CellProfilerInstance {
 			final ImgPlusValue<T> value = (ImgPlusValue<T>) row
 					.getCell(colIndexes[i]);
 
-			if (m_reference == null) {
+			if (m_reference == null || m_reference[i] == null) {
 				m_reference = new Interval[colIndexes.length];
 				m_reference[i] = value.getImgPlus();
 			} else if (!Intervals.equalDimensions(m_reference[i],
