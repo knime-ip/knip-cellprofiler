@@ -214,9 +214,8 @@ public class CellProfilerMeasurementTable implements Serializable {
 
 	@Override
 	public String toString() {
-		// FIXME: Better toString implementation
-		// FIXME: Maybe add table cell viewer for cellprofiler stuff
-		return "TODO";
+		return "CellProfiler Content: \n" + "Number of Rows: [" + numRows
+				+ "] \n" + "Number of Columns: [" + dataAsColumns.size() + "]";
 	}
 
 	public void save(final DataCellDataOutput output) throws IOException {
