@@ -332,6 +332,15 @@ public class CellProfilerInstance {
 			final ImgPlusValue<T> value = (ImgPlusValue<T>) row
 					.getCell(colIndexes[i]);
 
+			if (m_reference == null) {
+				m_reference = new Interval[colIndexes.length];
+				m_reference[i] = value.getImgPlus();
+			} else if (!Intervals.equalDimensions(m_reference[i],
+					value.getImgPlus())) {
+				throw new IllegalStateException(
+						"All images in one column must have the same dimensionality!");
+			}
+
 			// convert to floats
 			final RandomAccessibleInterval<FloatType> converted = Converters
 					.convert((RandomAccessibleInterval<T>) value.getImgPlus(),
