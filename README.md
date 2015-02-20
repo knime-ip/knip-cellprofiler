@@ -1,12 +1,4 @@
-KNIME Cell Profiler Integration - BETA
+KNIME Image Processing - Cell Profiler Integration (BETA)
 --------------
-### see: 
-* tech.knime.org/community/image-processing
+### see: http://tech.knime.org/book/cellprofiler
 
-### TODO:
-* Update: tech.knime.org/community/image-processing
-* Node to expand CellProfiler results
-* Improve performance on KNIME Side
-* Create Example Workflows and upload them to website
-* Turn this TODO list into proper issues
-* Clean-up GIT history
