@@ -23,6 +23,13 @@ import org.knime.core.data.def.StringCell;
 import org.knime.core.node.BufferedDataContainer;
 import org.knime.knip.base.KNIPConstants;
 
+/**
+ * Table representing calculations from a CellProfiler Pipeline
+ * 
+ * @author Patrick Winter (University of Konstanz)
+ * @author Christian Dietz (University of Konstanz)
+ *
+ */
 public class CellProfilerMeasurementTable implements Serializable {
 
 	protected enum InternalFormat {

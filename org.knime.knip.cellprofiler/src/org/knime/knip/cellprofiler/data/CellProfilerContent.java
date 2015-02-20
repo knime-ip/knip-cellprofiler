@@ -6,6 +6,13 @@ import java.io.Serializable;
 import org.knime.core.data.DataCellDataInput;
 import org.knime.core.data.DataCellDataOutput;
 
+/**
+ * Stores results from execution of CellProfiler Pipeline.
+ * 
+ * @author Patrick Winter (University of Konstanz)
+ * @author Christian Dietz (University of Konstanz)
+ *
+ */
 public class CellProfilerContent implements Serializable {
 
 	private static final long serialVersionUID = 7735517345148180658L;

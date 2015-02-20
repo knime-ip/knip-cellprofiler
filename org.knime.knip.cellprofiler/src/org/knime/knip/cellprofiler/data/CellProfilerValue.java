@@ -5,6 +5,13 @@ import javax.swing.Icon;
 import org.knime.core.data.DataValue;
 import org.knime.core.data.ExtensibleUtilityFactory;
 
+/**
+ * {@link DataValue} storing {@link CellProfilerContent}
+ * 
+ * @author Patrick Winter (University of Konstanz)
+ * @author Christian Dietz (University of Konstanz)
+ * 
+ */
 public interface CellProfilerValue extends DataValue {
 
 	static final UtilityFactory UTILITY = new CellProfilerUtilityFactory();

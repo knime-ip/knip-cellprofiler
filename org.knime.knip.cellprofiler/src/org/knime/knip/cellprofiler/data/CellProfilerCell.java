@@ -1,8 +1,6 @@
 package org.knime.knip.cellprofiler.data;
 
-import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataCellDataInput;
@@ -11,6 +9,13 @@ import org.knime.core.data.DataCellSerializer;
 import org.knime.core.data.DataType;
 import org.knime.core.data.DataValue;
 
+/**
+ * {@link DataCell} storing {@link CellProfilerContent}
+ * 
+ * @author Patrick Winter (University of Konstanz)
+ * @author Christian Dietz (University of Konstanz)
+ * 
+ */
 public class CellProfilerCell extends DataCell implements CellProfilerValue {
 
 	public static final DataType TYPE = DataType
