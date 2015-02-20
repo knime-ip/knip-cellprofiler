@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.imagej.ImgPlus;
+import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
@@ -23,6 +24,7 @@ import net.imglib2.ops.operation.Operations;
 import net.imglib2.ops.operation.iterableinterval.unary.MinMax;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Intervals;
 import net.imglib2.util.ValuePair;
 
 import org.apache.commons.io.FileUtils;
@@ -63,6 +65,8 @@ public class CellProfilerInstance {
 
 	private static final NodeLogger LOGGER = NodeLogger
 			.getLogger(CellProfilerInstance.class);
+
+	private static Interval[] m_reference;
 
 	private Process m_pythonProcess;
 
@@ -294,7 +298,7 @@ public class CellProfilerInstance {
 		int k = 0;
 		for (final String colName : objectNames) {
 			final String columnName = DataTableSpec.getUniqueColumnName(inSpec,
-					"CellProfiler Measurements: [" + colName + "]");
+					"CellProfiler Measurement: [" + colName + "]");
 			colSpecs[k++] = new DataColumnSpecCreator(columnName,
 					CellProfilerCell.TYPE).createSpec();
 		}
