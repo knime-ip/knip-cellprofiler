@@ -7,7 +7,9 @@ import org.knime.core.node.NodeView;
 /**
  * CellProfiler Pipeline Executor node factory.
  * 
+ * @author Christian Dietz, University of Konstanz
  * @author Patrick Winter, University of Konstanz
+ * 
  */
 public class MeasurementToTableNodeFactory extends
 		NodeFactory<MeasurementToTableNodeModel> {

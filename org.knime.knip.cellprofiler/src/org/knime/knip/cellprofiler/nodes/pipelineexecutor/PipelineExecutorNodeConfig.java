@@ -11,6 +11,8 @@ import org.knime.core.node.NodeSettingsWO;
  * CellProfiler Pipeline Executor node config.
  * 
  * @author Patrick Winter, University of Konstanz
+ * @author Christian Dietz, University of Konstanz
+ * 
  */
 public class PipelineExecutorNodeConfig {
 

@@ -37,6 +37,7 @@ import org.zeromq.ZMQException;
  * CellProfiler Pipeline Executor node dialog.
  * 
  * @author Patrick Winter, University of Konstanz
+ * @author Christian Dietz, University of Konstanz
  */
 public class PipelineExecutorNodeDialog extends NodeDialogPane {
 

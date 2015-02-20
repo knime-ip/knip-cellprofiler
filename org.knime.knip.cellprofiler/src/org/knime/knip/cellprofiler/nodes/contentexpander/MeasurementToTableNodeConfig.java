@@ -7,7 +7,9 @@ import org.knime.core.node.NodeSettingsWO;
 /**
  * CellProfiler Pipeline Executor node config.
  * 
+ * @author Christian Dietz, University of Konstanz
  * @author Patrick Winter, University of Konstanz
+ * 
  */
 public class MeasurementToTableNodeConfig {
 

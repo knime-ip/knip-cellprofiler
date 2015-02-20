@@ -8,6 +8,7 @@ import org.knime.knip.cellprofiler.data.CellProfilerValue;
  * CellProfiler Pipeline Executor node dialog.
  * 
  * @author Christian Dietz, University of Konstanz
+ * @author Patrick Winter, University of Konstanz
  */
 public class MeasurementToTableNodeDialog extends DefaultNodeSettingsPane {
 
