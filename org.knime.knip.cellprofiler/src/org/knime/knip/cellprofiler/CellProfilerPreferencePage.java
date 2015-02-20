@@ -67,11 +67,12 @@ import org.osgi.service.prefs.BackingStoreException;
  * Preference page for configurations.
  * 
  * @author Patrick Winter, University of Konstanz
+ * @author Christian Dietz, University of Konstanz
  */
 public class CellProfilerPreferencePage extends PreferencePage implements
 		IWorkbenchPreferencePage {
 
-	private static final String DEFAULT_PATH = "";
+	private static final String DEFAULT_PATH = doAutoGuessCellProfilerPath();
 
 	private static final NodeLogger LOGGER = NodeLogger
 			.getLogger(CellProfilerPreferencePage.class);
@@ -90,6 +91,19 @@ public class CellProfilerPreferencePage extends PreferencePage implements
 	public static String getPath() {
 		return Platform.getPreferencesService().getString(
 				"org.knime.knip.cellprofiler", "path", DEFAULT_PATH, null);
+	}
+
+	private static String doAutoGuessCellProfilerPath() {
+		final String OS = System.getProperty("os.name", "generic");
+		if ((OS.indexOf("mac") >= 0) || (OS.indexOf("darwin") >= 0)) {
+			return "/Applications/CellProfiler.app";
+		} else if (OS.indexOf("win") >= 0) {
+			return "C:\\Program Files\\CellProfiler";
+		} else if (OS.indexOf("nux") >= 0) {
+			return "/usr/bin/cellprofiler";
+		} else {
+			return "";
+		}
 	}
 
 	/**
