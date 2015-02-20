@@ -2,16 +2,18 @@
 <knimeNode icon="cellprofiler.png" type="Manipulator">
 	<name>CellProfiler Measurements To Table</name>
 	<shortDescription>
-	 Extract the table from the CellProfiler result cells.
+		Extract the table from the CellProfiler result cells.
 	</shortDescription>
 	<fullDescription>
 		<intro>
-			Lets you execute a CellProfiler pipeline on images in a table.
+			CellProfilerResult tables can be converted to KNIME tables
+			using this noce.
 		</intro>
 		<option name="Column of CellProfiler Measurement">Column containing cell profiler results.</option>
 	</fullDescription>
 	<ports>
-		<inPort index="0" name="CellProfiler Measurements">Table containing CellProfiler measurements.</inPort>
+		<inPort index="0" name="CellProfiler Measurements">Table containing CellProfiler
+			measurements.</inPort>
 		<outPort index="0" name="KNIME Table with Measurements">KNIME table with measurements.</outPort>
 	</ports>
 </knimeNode>
