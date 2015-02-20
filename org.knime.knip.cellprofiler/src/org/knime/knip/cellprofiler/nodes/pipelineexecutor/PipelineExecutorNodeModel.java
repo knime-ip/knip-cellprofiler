@@ -93,7 +93,7 @@ public class PipelineExecutorNodeModel extends NodeModel {
 		// Check column configuration
 		String[] imageColumns = m_config.getImageColumns();
 		for (int i = 0; i < imageColumns.length; i++) {
-			if (imageColumns[i].isEmpty()) {
+			if (imageColumns[i] == null || imageColumns[i].isEmpty()) {
 				throw new InvalidSettingsException("Image " + (i + 1)
 						+ " not selected");
 			}

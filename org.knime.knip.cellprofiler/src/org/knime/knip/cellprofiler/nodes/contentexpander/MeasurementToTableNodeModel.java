@@ -3,6 +3,7 @@ package org.knime.knip.cellprofiler.nodes.contentexpander;
 import java.io.File;
 import java.io.IOException;
 
+import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.node.BufferedDataContainer;
@@ -50,6 +51,10 @@ public class MeasurementToTableNodeModel extends NodeModel {
 
 		int measurementColumnIndex = inData[0].getDataTableSpec()
 				.findColumnIndex(measurementColumnModel.getStringValue());
+		if (measurementColumnIndex == -1) {
+			measurementColumnIndex = autoGuessColumnIdx(inData[0]
+					.getDataTableSpec());
+		}
 
 		BufferedDataContainer outData = null;
 
@@ -68,11 +73,29 @@ public class MeasurementToTableNodeModel extends NodeModel {
 		return new BufferedDataTable[] { outData.getTable() };
 	}
 
+	private int autoGuessColumnIdx(final DataTableSpec tableSpec)
+			throws InvalidSettingsException {
+
+		int i = 0;
+		for (final DataColumnSpec spec : tableSpec) {
+			if (spec.getType().isCompatible(CellProfilerValue.class)) {
+				return i;
+			}
+			i++;
+		}
+
+		throw new InvalidSettingsException(
+				"No compatible column found: CellProfilerContent.");
+	}
+
 	@Override
 	protected DataTableSpec[] configure(final DataTableSpec[] inSpecs)
 			throws InvalidSettingsException {
-		// FIXME: can we be smarter here?
-		return null;
+
+		// check if there exists any column
+		autoGuessColumnIdx(inSpecs[0]);
+
+		return new DataTableSpec[] { null };
 	}
 
 	@Override

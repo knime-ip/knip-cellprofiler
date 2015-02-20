@@ -14,7 +14,6 @@ import java.util.Map;
 
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
-import net.imagej.axis.AxisType;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
@@ -67,8 +66,6 @@ public class CellProfilerInstance {
 
 	private static final NodeLogger LOGGER = NodeLogger
 			.getLogger(CellProfilerInstance.class);
-
-	private static Interval[] m_reference;
 
 	private Process m_cellProfilerProcess;
 
@@ -303,6 +300,9 @@ public class CellProfilerInstance {
 			colIndexes[i] = inSpec.findColumnIndex(imageColumns[i].getSecond());
 		}
 		CellFactory factory = new AbstractCellFactory(colSpecs) {
+
+			private Interval[] m_reference;
+
 			@Override
 			public DataCell[] getCells(final DataRow row) {
 				try {
@@ -313,103 +313,114 @@ public class CellProfilerInstance {
 					throw new RuntimeException(e.getMessage(), e);
 				}
 			}
+
+			@SuppressWarnings({ "rawtypes", "unchecked" })
+			private <T extends RealType<T>> DataCell[] createCells(
+					final DataRow row, final DataTableSpec inSpec,
+					final Pair<String, String>[] imageColumns,
+					final int[] colIndexes, final IKnimeBridge knimeBridge)
+					throws ProtocolException, ZMQException,
+					CellProfilerException, PipelineException {
+				boolean group = false;
+				Map<String, ImgPlus<?>> images = new HashMap<String, ImgPlus<?>>();
+				for (int i = 0; i < colIndexes.length; i++) {
+					final ImgPlusValue<T> value = (ImgPlusValue<T>) row
+							.getCell(colIndexes[i]);
+
+					if (m_reference == null || m_reference[i] == null) {
+						m_reference = new Interval[colIndexes.length];
+						m_reference[i] = value.getImgPlus();
+					} else if (!Intervals.equalDimensions(m_reference[i],
+							value.getImgPlus())) {
+						throw new IllegalStateException(
+								"All images in one column must have the same dimensionality!");
+					}
+
+					// convert to floats
+					final RandomAccessibleInterval<FloatType> converted = Converters
+							.convert((RandomAccessibleInterval<T>) value
+									.getImgPlus(),
+									new FloatConverter<T>(value.getImgPlus()),
+									new FloatType());
+
+					if (converted.numDimensions() == 2
+							|| (converted.numDimensions() == 3 && value
+									.getImgPlus().axis(2).type()
+									.equals(Axes.CHANNEL))) {
+						try {
+							images.put(
+									imageColumns[i].getFirst(),
+									new ImgPlus(
+											new ImgView<FloatType>(
+													converted,
+													value.getImgPlus()
+															.factory()
+															.imgFactory(
+																	new FloatType())),
+											value.getImgPlus()));
+						} catch (IncompatibleTypeException e) {
+							throw new RuntimeException(e);
+						}
+					} else {
+						try {
+							images.put(
+									imageColumns[i].getFirst(),
+									new ImgPlus(
+											new ImgView<FloatType>(
+													converted,
+													value.getImgPlus()
+															.factory()
+															.imgFactory(
+																	new FloatType())),
+											value.getImgPlus()));
+						} catch (IncompatibleTypeException e) {
+							throw new RuntimeException(e);
+						}
+						group = true;
+					}
+				}
+				if (group) {
+					knimeBridge.runGroup(images);
+				} else {
+					knimeBridge.run(images);
+				}
+
+				return createCellProfilerContentCell(row.getKey().getString(),
+						knimeBridge);
+			}
+
+			/**
+			 * Helper to convert pixels of images to floats in range [0..1]
+			 * 
+			 * @author Christian Dietz, University of Konstanz
+			 *
+			 * @param <T>
+			 */
+			class FloatConverter<T extends RealType<T>> implements
+					Converter<T, FloatType> {
+
+				private final double max;
+				private final double min;
+
+				public FloatConverter(final Img<T> input) {
+
+					final ValuePair<T, T> res = Operations.compute(
+							new MinMax<T>(), input);
+
+					this.min = res.getA().getRealDouble();
+					this.max = res.getB().getRealDouble();
+				}
+
+				@Override
+				public void convert(final T arg0, final FloatType arg1) {
+					arg1.setReal((arg0.getRealFloat() - min) / (max - min));
+				}
+
+			}
 		};
 		// Append columns from the factory
 		rearranger.append(factory);
 		return rearranger;
-	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private static <T extends RealType<T>> DataCell[] createCells(
-			final DataRow row, final DataTableSpec inSpec,
-			final Pair<String, String>[] imageColumns, final int[] colIndexes,
-			final IKnimeBridge knimeBridge) throws ProtocolException,
-			ZMQException, CellProfilerException, PipelineException {
-		boolean group = false;
-		Map<String, ImgPlus<?>> images = new HashMap<String, ImgPlus<?>>();
-		for (int i = 0; i < colIndexes.length; i++) {
-			final ImgPlusValue<T> value = (ImgPlusValue<T>) row
-					.getCell(colIndexes[i]);
-
-			if (m_reference == null || m_reference[i] == null) {
-				m_reference = new Interval[colIndexes.length];
-				m_reference[i] = value.getImgPlus();
-			} else if (!Intervals.equalDimensions(m_reference[i],
-					value.getImgPlus())) {
-				throw new IllegalStateException(
-						"All images in one column must have the same dimensionality!");
-			}
-
-			// convert to floats
-			final RandomAccessibleInterval<FloatType> converted = Converters
-					.convert((RandomAccessibleInterval<T>) value.getImgPlus(),
-							new FloatConverter<T>(value.getImgPlus()),
-							new FloatType());
-
-			if (converted.numDimensions() == 2
-					|| (converted.numDimensions() == 3 && value.getImgPlus()
-							.axis(2).type().equals(Axes.CHANNEL))) {
-				try {
-					images.put(
-							imageColumns[i].getFirst(),
-							new ImgPlus(new ImgView<FloatType>(converted, value
-									.getImgPlus().factory()
-									.imgFactory(new FloatType())), value
-									.getImgPlus()));
-				} catch (IncompatibleTypeException e) {
-					throw new RuntimeException(e);
-				}
-			} else {
-				try {
-					images.put(
-							imageColumns[i].getFirst(),
-							new ImgPlus(new ImgView<FloatType>(converted, value
-									.getImgPlus().factory()
-									.imgFactory(new FloatType())), value
-									.getImgPlus()));
-				} catch (IncompatibleTypeException e) {
-					throw new RuntimeException(e);
-				}
-				group = true;
-			}
-		}
-		if (group) {
-			knimeBridge.runGroup(images);
-		} else {
-			knimeBridge.run(images);
-		}
-
-		return createCellProfilerContentCell(row.getKey().getString(),
-				knimeBridge);
-	}
-
-	/**
-	 * Helper to convert pixels of images to floats in range [0..1]
-	 * 
-	 * @author Christian Dietz, University of Konstanz
-	 *
-	 * @param <T>
-	 */
-	static class FloatConverter<T extends RealType<T>> implements
-			Converter<T, FloatType> {
-
-		private final double max;
-		private final double min;
-
-		public FloatConverter(final Img<T> input) {
-
-			final ValuePair<T, T> res = Operations.compute(new MinMax<T>(),
-					input);
-
-			this.min = res.getA().getRealDouble();
-			this.max = res.getB().getRealDouble();
-		}
-
-		@Override
-		public void convert(final T arg0, final FloatType arg1) {
-			arg1.setReal((arg0.getRealFloat() - min) / (max - min));
-		}
-
 	}
 
 }
