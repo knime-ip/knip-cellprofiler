@@ -122,35 +122,33 @@ public class PipelineExecutorNodeDialog extends NodeDialogPane {
 	 *            Parameter names of the expected input images.
 	 */
 	public void updateColumnSelection(String[] inputParameters) {
-		if (!Arrays.equals(inputParameters, m_inputParameters)) {
-			// Remove old column selectors
-			while (m_imageColumns.size() > 0) {
-				m_panel.remove(m_imageColumns.get(0));
-				m_imageColumns.remove(0);
-			}
-			if (inputParameters.length > 0) {
-				// Add new column selectors
-				GridBagConstraints gbc = new GridBagConstraints();
-				gbc.insets = new Insets(5, 5, 5, 5);
-				gbc.anchor = GridBagConstraints.NORTHWEST;
-				gbc.fill = GridBagConstraints.BOTH;
-				gbc.weightx = 1;
-				gbc.gridwidth = 1;
-				gbc.gridx = 0;
-				gbc.gridy = m_panel.getComponentCount();
-				for (int i = 0; i < inputParameters.length; i++) {
-					@SuppressWarnings("unchecked")
-					ColumnSelectionComboxBox imageColumn = new ColumnSelectionComboxBox(
-							inputParameters[i], ImgPlusValue.class);
-					try {
-						imageColumn.update(m_spec, null);
-					} catch (NotConfigurableException e) {
-						LOGGER.error(e.getMessage(), e);
-					}
-					m_panel.add(imageColumn, gbc);
-					m_imageColumns.add(imageColumn);
-					gbc.gridy++;
+		// Remove old column selectors
+		while (m_imageColumns.size() > 0) {
+			m_panel.remove(m_imageColumns.get(0));
+			m_imageColumns.remove(0);
+		}
+		if (inputParameters.length > 0) {
+			// Add new column selectors
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.insets = new Insets(5, 5, 5, 5);
+			gbc.anchor = GridBagConstraints.NORTHWEST;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.weightx = 1;
+			gbc.gridwidth = 1;
+			gbc.gridx = 0;
+			gbc.gridy = m_panel.getComponentCount();
+			for (int i = 0; i < inputParameters.length; i++) {
+				@SuppressWarnings("unchecked")
+				ColumnSelectionComboxBox imageColumn = new ColumnSelectionComboxBox(
+						inputParameters[i], ImgPlusValue.class);
+				try {
+					imageColumn.update(m_spec, null);
+				} catch (NotConfigurableException e) {
+					LOGGER.error(e.getMessage(), e);
 				}
+				m_panel.add(imageColumn, gbc);
+				m_imageColumns.add(imageColumn);
+				gbc.gridy++;
 			}
 		}
 		m_inputParameters = inputParameters;
