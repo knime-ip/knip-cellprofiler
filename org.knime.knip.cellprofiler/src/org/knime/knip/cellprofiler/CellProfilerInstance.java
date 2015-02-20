@@ -11,7 +11,6 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import net.imagej.ImgPlus;
 import net.imglib2.RandomAccessibleInterval;
@@ -51,13 +50,13 @@ import org.knime.knip.base.data.img.ImgPlusValue;
 import org.knime.knip.cellprofiler.data.CellProfilerCell;
 import org.knime.knip.cellprofiler.data.CellProfilerContent;
 import org.knime.knip.cellprofiler.data.CellProfilerMeasurementTable;
-import org.knime.knip.cellprofiler.nodes.pipelineexecutor.PipelineExecutorNodeConfig;
 import org.zeromq.ZMQException;
 
 /**
  * Starts and manages an instance of CellProfiler.
  * 
  * @author Patrick Winter, University of Konstanz
+ * @author Christian Dietz, University of Konstanz
  */
 @SuppressWarnings("deprecation")
 public class CellProfilerInstance {
@@ -117,6 +116,7 @@ public class CellProfilerInstance {
 			PipelineException, ProtocolException, IOException {
 		m_knimeBridge.loadPipeline(FileUtils.readFileToString(new File(
 				pipelineFile)));
+		m_knimeBridge.cleanPipeline();
 	}
 
 	/**
@@ -171,7 +171,7 @@ public class CellProfilerInstance {
 	private static CellProfilerCell[] createCellProfilerContentCell(
 			final String parentKey, final IKnimeBridge knimeBridge) {
 
-		final List<String> measurementNames = knimeBridge.getObjectNames();
+		final List<String> measurementNames = knimeBridge.getResultTableNames();
 		final CellProfilerCell[] cells = new CellProfilerCell[measurementNames
 				.size()];
 
@@ -281,7 +281,7 @@ public class CellProfilerInstance {
 	 * @return number of output measurements
 	 */
 	public List<String> getObjectNames() {
-		return m_knimeBridge.getObjectNames();
+		return m_knimeBridge.getResultTableNames();
 	}
 
 	private static ColumnRearranger createColumnRearranger(
