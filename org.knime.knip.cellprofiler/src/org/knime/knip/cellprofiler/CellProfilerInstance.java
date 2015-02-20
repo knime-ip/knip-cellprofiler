@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 import net.imagej.ImgPlus;
+import net.imagej.axis.Axes;
+import net.imagej.axis.AxisType;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
@@ -344,13 +346,16 @@ public class CellProfilerInstance {
 							new FloatConverter<T>(value.getImgPlus()),
 							new FloatType());
 
-			if (converted.numDimensions() == 2) {
+			if (converted.numDimensions() == 2
+					|| (converted.numDimensions() == 3 && value.getImgPlus()
+							.axis(2).type().equals(Axes.CHANNEL))) {
 				try {
 					images.put(
 							imageColumns[i].getFirst(),
 							new ImgPlus(new ImgView<FloatType>(converted, value
 									.getImgPlus().factory()
-									.imgFactory(new FloatType()))));
+									.imgFactory(new FloatType())), value
+									.getImgPlus()));
 				} catch (IncompatibleTypeException e) {
 					throw new RuntimeException(e);
 				}
