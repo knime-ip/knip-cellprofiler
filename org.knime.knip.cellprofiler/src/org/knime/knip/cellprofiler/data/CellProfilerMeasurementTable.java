@@ -132,9 +132,8 @@ public class CellProfilerMeasurementTable implements Serializable {
 		if (this.numRows == -1)
 			this.numRows = numRows;
 		else if (this.numRows != numRows)
-			// FIXME better exception message
 			throw new IllegalStateException(
-					"Inconsistent measurements. Please contact maintainer of KNIME CellProfiler Integration!");
+					"Inconsistent measurements. This shouldn't happen! Please contact us: http://tech.knime.org/forum");
 
 	}
 
