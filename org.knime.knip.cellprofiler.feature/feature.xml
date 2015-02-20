@@ -3,10 +3,10 @@
       id="org.knime.knip.cellprofiler.feature"
       label="KNIME Image Processing - CellProfiler Integration"
       version="0.1.0.qualifier"
-      provider-name="Lee Kamentsky, BroadInstitute and Christian Dietz, University of Konstanz">
+      provider-name="Lee Kamentsky (Broad Institute),  Patrick Winter (University of Konstanz) and Christian Dietz (University of Konstanz)">
 
    <description>
-      KNIME Image Processing - CellProfiler Integration
+      KNIME Image Processing - CellProfiler Integration. Allows to execute CellProfiler pipelines in KNIME.
    </description>
 
    <copyright>
@@ -21,5 +21,4 @@
          download-size="0"
          install-size="0"
          version="0.0.0"/>
-
 </feature>
