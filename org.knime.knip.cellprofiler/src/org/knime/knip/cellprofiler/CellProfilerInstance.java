@@ -96,9 +96,12 @@ public class CellProfilerInstance {
 		// Get a free port for communication with CellProfiler
 		m_port = getFreePort();
 		// Start CellProfiler
-		ProcessBuilder processBuilder = new ProcessBuilder(
-				cellProfilerCommand[0], cellProfilerCommand[1],
-				"--knime-bridge-address=tcp://127.0.0.1:" + m_port);
+
+		final String param = "--knime-bridge-address=tcp://127.0.0.1:" + m_port;
+		final ProcessBuilder processBuilder = cellProfilerCommand[0].isEmpty() ? new ProcessBuilder(
+				cellProfilerCommand[1], param) : new ProcessBuilder(
+				cellProfilerCommand[0], cellProfilerCommand[1], param);
+
 		m_cellProfilerProcess = processBuilder.start();
 
 		startStreamListener(m_cellProfilerProcess.getInputStream(), false);
