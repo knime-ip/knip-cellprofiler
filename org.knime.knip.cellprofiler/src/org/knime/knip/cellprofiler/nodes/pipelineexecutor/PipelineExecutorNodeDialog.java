@@ -46,8 +46,6 @@ public class PipelineExecutorNodeDialog extends NodeDialogPane {
 
 	private static final String WORKFLOW_DIR = "knime://knime.workflow";
 
-	private static final String WORKFLOW_PATH = initWorkflowPath();
-
 	private static final NodeLogger LOGGER = NodeLogger
 			.getLogger(PipelineExecutorNodeDialog.class);
 
@@ -234,7 +232,7 @@ public class PipelineExecutorNodeDialog extends NodeDialogPane {
 	protected void saveSettingsTo(NodeSettingsWO settings)
 			throws InvalidSettingsException {
 		PipelineExecutorNodeConfig config = new PipelineExecutorNodeConfig();
-		config.setPipelineFile(m_pipelineFile.getSelectedFile());
+		config.setPipelineFile(m_pipelineFile.getSelectedFile().replace(initWorkflowPath(), "knime://knime.workflow"));
 		config.setInputParameters(m_inputParameters);
 		config.setObjectNames(m_objectNames);
 		String[] imageColumns = new String[m_imageColumns.size()];
@@ -246,7 +244,7 @@ public class PipelineExecutorNodeDialog extends NodeDialogPane {
 	}
 
 	public static String resolveToLocalPath(String pipelineFile) {
-		return pipelineFile.replace(WORKFLOW_DIR, WORKFLOW_PATH);
+		return pipelineFile.replace(WORKFLOW_DIR, initWorkflowPath());
 	}
 
 }
