@@ -52,7 +52,7 @@ import java.io.File;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.jface.preference.FileFieldEditor;
+import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -83,7 +83,7 @@ public class CellProfilerPreferencePage extends PreferencePage implements
 
 	private Composite m_container;
 
-	private FileFieldEditor m_pathEditor;
+	private DirectoryFieldEditor m_pathEditor;
 
 	/**
 	 * Gets the currently configured path.
@@ -96,7 +96,7 @@ public class CellProfilerPreferencePage extends PreferencePage implements
 				"org.knime.knip.cellprofiler", "path", DEFAULT_PATH, null);
 
 		final String[] command = new String[2];
-		final String OS = System.getProperty("os.name", "generic");
+		final String OS = getOS();
 
 		if ((OS.indexOf("mac") >= 0) || (OS.indexOf("darwin") >= 0)) {
 			command[0] = "";
@@ -116,8 +116,12 @@ public class CellProfilerPreferencePage extends PreferencePage implements
 		return command;
 	}
 
+	private static String getOS() {
+		return System.getProperty("os.name", "generic").toLowerCase();
+	}
+
 	private static String doAutoGuessCellProfilerPath() {
-		final String OS = System.getProperty("os.name", "generic");
+		final String OS = getOS();
 		if ((OS.indexOf("mac") >= 0) || (OS.indexOf("darwin") >= 0)) {
 			return "/Applications/CellProfiler.app";
 		} else if (OS.indexOf("win") >= 0) {
@@ -199,7 +203,7 @@ public class CellProfilerPreferencePage extends PreferencePage implements
 		m_sc = new ScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL);
 		m_container = new Composite(m_sc, SWT.NONE);
 		m_container.setLayout(new GridLayout());
-		m_pathEditor = new FileFieldEditor("org.knime.knip.cellprofiler",
+		m_pathEditor = new DirectoryFieldEditor("org.knime.knip.cellprofiler",
 				"Path to CellProfiler Installation", m_container);
 		m_pathEditor.setStringValue(Platform.getPreferencesService().getString(
 				"org.knime.knip.cellprofiler", "path", DEFAULT_PATH, null));

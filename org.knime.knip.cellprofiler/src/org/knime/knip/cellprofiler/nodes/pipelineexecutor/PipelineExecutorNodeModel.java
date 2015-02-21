@@ -44,7 +44,8 @@ public class PipelineExecutorNodeModel extends NodeModel {
 		BufferedDataTable table;
 		CellProfilerInstance cellProfiler = new CellProfilerInstance();
 		try {
-			cellProfiler.loadPipeline(m_config.getPipelineFile());
+			cellProfiler.loadPipeline(PipelineExecutorNodeDialog
+					.resolveToLocalPath(m_config.getPipelineFile()));
 			// Check if pipeline input parameters have changed
 			if (!Arrays.equals(cellProfiler.getInputParameters(),
 					m_config.getInputParameters())) {
@@ -78,10 +79,12 @@ public class PipelineExecutorNodeModel extends NodeModel {
 	protected DataTableSpec[] configure(DataTableSpec[] inSpecs)
 			throws InvalidSettingsException {
 		// Check pipeline file
-		String pipelineFile = m_config.getPipelineFile();
+		final String pipelineFile = PipelineExecutorNodeDialog
+				.resolveToLocalPath(m_config.getPipelineFile());
 		if (pipelineFile.isEmpty()) {
 			throw new InvalidSettingsException("No pipeline file selected");
 		}
+
 		if (!new File(pipelineFile).exists()) {
 			throw new InvalidSettingsException("The pipeline file "
 					+ pipelineFile + " does not exist");
@@ -101,16 +104,15 @@ public class PipelineExecutorNodeModel extends NodeModel {
 					.getColumnSpec(imageColumns[i]);
 			if (imageColumnSpec == null) {
 				throw new InvalidSettingsException("The column "
-						+ imageColumns[i]
-						+ " is missing in the input table");
+						+ imageColumns[i] + " is missing in the input table");
 			}
 			if (!imageColumnSpec.getType().isCompatible(ImgPlusValue.class)) {
 				throw new InvalidSettingsException("The column "
-						+ imageColumns[i]
-						+ " is not of the type image plus");
+						+ imageColumns[i] + " is not of the type image plus");
 			}
 		}
-		return new DataTableSpec[] { CellProfilerInstance.getOutputSpec(inSpecs[0], createInputParameters(), m_config.getObjectNames()) };
+		return new DataTableSpec[] { CellProfilerInstance.getOutputSpec(
+				inSpecs[0], createInputParameters(), m_config.getObjectNames()) };
 	}
 
 	/**
