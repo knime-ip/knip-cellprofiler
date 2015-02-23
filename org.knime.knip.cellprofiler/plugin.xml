@@ -4,7 +4,7 @@
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
-            category="org.knime.workbench.ui.preferences"
+            category="org.knime.knip.base.prefs.MainPreferencePage"
             class="org.knime.knip.cellprofiler.CellProfilerPreferencePage"
             id="org.knime.knip.cellprofiler.CellProfilerPreferencePage"
             name="CellProfiler">
