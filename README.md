@@ -1,7 +1,7 @@
 KNIME Image Processing - Cell Profiler Integration
 --------------
 ### About
-Integration of [Cellprofiler](http://www.cellprofiler.org/) in KNIME Image Processing, allows to run CellProfiler Pipelines within KNIME. Supports all CellProfiler pipelines which take images as input and output a feature-table.
+Integration of [CellProfiler](http://www.cellprofiler.org/) in KNIME Image Processing, allows to run CellProfiler Pipelines within KNIME. Supports all CellProfiler pipelines which take images as input and output a feature-table.
 
 ### Installation
 See the [KNIME CellProfiler Page](http://tech.knime.org/community/cellprofiler) for installation instructions.
