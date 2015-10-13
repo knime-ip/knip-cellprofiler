@@ -2,7 +2,8 @@
 <feature
       id="org.knime.knip.cellprofiler.update"
       label="KNIME Image Processing - CellProfiler Integration"
-      version="0.2.0.qualifier">
+      version="0.2.0.qualifier"
+      provider-name="Lee Kamentsky (Broad Institute),  Patrick Winter (University of Konstanz) and Christian Dietz (University of Konstanz)">
 
    <includes
          id="org.knime.knip.cellprofiler.feature"

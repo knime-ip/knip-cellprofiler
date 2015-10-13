@@ -6,7 +6,10 @@
       provider-name="Lee Kamentsky (Broad Institute),  Patrick Winter (University of Konstanz) and Christian Dietz (University of Konstanz)">
 
    <description>
-      KNIME Image Processing - CellProfiler Integration. Allows to execute CellProfiler pipelines in KNIME.
+      KNIME Image Processing - CellProfiler Integration. Allows to
+execute CellProfiler pipelines in KNIME.
+
+-CellProfiler is provided by Broad Institute
    </description>
 
    <copyright>
