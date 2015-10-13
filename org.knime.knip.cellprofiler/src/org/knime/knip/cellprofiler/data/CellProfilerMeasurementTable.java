@@ -5,10 +5,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.imglib2.util.Pair;
-import net.imglib2.util.ValuePair;
-
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataCellDataInput;
 import org.knime.core.data.DataCellDataOutput;
@@ -22,6 +18,9 @@ import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.StringCell;
 import org.knime.core.node.BufferedDataContainer;
 import org.knime.knip.base.KNIPConstants;
+
+import net.imglib2.util.Pair;
+import net.imglib2.util.ValuePair;
 
 /**
  * Table representing calculations from a CellProfiler Pipeline
