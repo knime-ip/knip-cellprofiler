@@ -2,17 +2,17 @@ Manifest-Version: 1.0
 Bundle-Name: KNIME CellProfiler Integration
 Bundle-SymbolicName: org.knime.knip.cellprofiler;singleton:=true
 Bundle-ManifestVersion: 2
-Bundle-Version: 0.1.0.qualifier
-Bundle-Vendor: Christian Dietz, University of Konstanz
-Require-Bundle: org.knime.base;bundle-version="[2.11.1,3.0.0)",
- org.knime.knip.base;bundle-version="[1.3.0,2.0.0)",
- org.eclipse.ui;bundle-version="[3.7.0,4.0.0)",
+Bundle-Version: 0.2.0.qualifier
+Bundle-Vendor: Broad Institute / University of Konstanz
+Require-Bundle: org.knime.base;bundle-version="[3.0.0,4.0.0)",
+ org.knime.knip.base;bundle-version="[1.4.0,1.5.0)",
+ org.eclipse.ui;bundle-version="3.107.0",
  imagej-common;bundle-version="0.12.0",
  imglib2;bundle-version="2.2.0",
  org.apache.commons.lang3;bundle-version="3.2.1",
  scijava-common;bundle-version="2.36.0",
  knip-tmp-imglib2-ops;bundle-version="0.1.4"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: knip_cellprofiler.jar,
  lib/knime-bridge-0.0.1-SNAPSHOT.jar,
  lib/javax.json-1.0.4.jar,
