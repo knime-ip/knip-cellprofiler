@@ -92,11 +92,15 @@ public class CellProfilerPreferencePage extends PreferencePage implements
 	 */
 	public static String[] getCellProfilerCommand() {
 
-		final String path = Platform.getPreferencesService().getString(
+		String path = Platform.getPreferencesService().getString(
 				"org.knime.knip.cellprofiler", "path", DEFAULT_PATH, null);
 
 		final String[] command = new String[2];
 		final String OS = getOS();
+		
+		if (!path.endsWith("/")) {
+			path += "/";
+		}
 
 		if ((OS.indexOf("mac") >= 0) || (OS.indexOf("darwin") >= 0)) {
 			command[0] = "";
@@ -107,7 +111,7 @@ public class CellProfilerPreferencePage extends PreferencePage implements
 		} else if (OS.indexOf("nux") >= 0) {
 			command[0] = "python";
 			command[1] = path + "CellProfiler.py";
-		} else if (!path.endsWith("/")) {
+		} else {
 			// we hope for python
 			command[0] = "python";
 			command[1] = path + "CellProfiler.py";
