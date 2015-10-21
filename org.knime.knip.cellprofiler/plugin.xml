@@ -45,4 +45,15 @@
          </renderer>
       </dataValue>
    </extension>
+   <extension
+         point="org.knime.core.DataType">
+      <DataType
+            cellClass="org.knime.knip.cellprofiler.data.CellProfilerCell"
+            factoryClass="org.knime.knip.cellprofiler.data.CellProfilerCellFactory">
+         <serializer
+               cellClass="org.knime.knip.cellprofiler.data.CellProfilerCell"
+               serializerClass="org.knime.knip.cellprofiler.data.CellProfilerCellSerializer">
+         </serializer>
+      </DataType>
+   </extension>
 </plugin>
