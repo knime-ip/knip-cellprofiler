@@ -8,25 +8,10 @@ import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import net.imagej.ImgPlus;
-import net.imagej.axis.Axes;
-import net.imglib2.Interval;
-import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.converter.Converter;
-import net.imglib2.converter.Converters;
-import net.imglib2.exception.IncompatibleTypeException;
-import net.imglib2.img.Img;
-import net.imglib2.img.ImgView;
-import net.imglib2.ops.operation.Operations;
-import net.imglib2.ops.operation.iterableinterval.unary.MinMax;
-import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.numeric.real.FloatType;
-import net.imglib2.util.Intervals;
-import net.imglib2.util.ValuePair;
 
 import org.apache.commons.io.FileUtils;
 import org.cellprofiler.knimebridge.CellProfilerException;
@@ -41,19 +26,33 @@ import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.DataType;
 import org.knime.core.data.container.AbstractCellFactory;
 import org.knime.core.data.container.CellFactory;
 import org.knime.core.data.container.ColumnRearranger;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
-import org.knime.core.node.NodeLogger;
 import org.knime.core.util.Pair;
 import org.knime.knip.base.data.img.ImgPlusValue;
 import org.knime.knip.cellprofiler.data.CellProfilerCell;
 import org.knime.knip.cellprofiler.data.CellProfilerContent;
 import org.knime.knip.cellprofiler.data.CellProfilerMeasurementTable;
+import org.knime.knip.core.KNIPGateway;
 import org.zeromq.ZMQException;
+
+import net.imagej.ImgPlus;
+import net.imagej.axis.Axes;
+import net.imglib2.Interval;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.converter.Converter;
+import net.imglib2.converter.Converters;
+import net.imglib2.exception.IncompatibleTypeException;
+import net.imglib2.img.Img;
+import net.imglib2.img.ImgView;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Intervals;
 
 /**
  * Starts and manages an instance of CellProfiler.
@@ -63,9 +62,6 @@ import org.zeromq.ZMQException;
  */
 @SuppressWarnings("deprecation")
 public class CellProfilerInstance {
-
-	private static final NodeLogger LOGGER = NodeLogger
-			.getLogger(CellProfilerInstance.class);
 
 	private Process m_cellProfilerProcess;
 
@@ -222,9 +218,9 @@ public class CellProfilerInstance {
 				try {
 					while ((line = in.readLine()) != null) {
 						if (error) {
-							LOGGER.warn(line);
+							KNIPGateway.log().warn(line);
 						} else {
-							LOGGER.debug(line);
+							KNIPGateway.log().debug(line);
 						}
 					}
 				} catch (IOException e) {
@@ -327,8 +323,14 @@ public class CellProfilerInstance {
 				boolean group = false;
 				Map<String, ImgPlus<?>> images = new HashMap<String, ImgPlus<?>>();
 				for (int i = 0; i < colIndexes.length; i++) {
-					final ImgPlusValue<T> value = (ImgPlusValue<T>) row
-							.getCell(colIndexes[i]);
+					final DataCell cell = row.getCell(colIndexes[i]);
+					
+					if(cell.isMissing()){
+						images = null;
+						break;
+					}
+					
+					final ImgPlusValue<T> value = (ImgPlusValue<T>) cell;
 
 					if (m_reference == null || m_reference[i] == null) {
 						m_reference = new Interval[colIndexes.length];
@@ -382,14 +384,21 @@ public class CellProfilerInstance {
 						group = true;
 					}
 				}
-				if (group) {
-					knimeBridge.runGroup(images);
-				} else {
-					knimeBridge.run(images);
-				}
+				
+				if (images != null) {
+					if (group) {
+						knimeBridge.runGroup(images);
+					} else {
+						knimeBridge.run(images);
+					}
 
-				return createCellProfilerContentCell(row.getKey().getString(),
-						knimeBridge);
+					return createCellProfilerContentCell(row.getKey().getString(), knimeBridge);
+				} else {
+					KNIPGateway.log().warn("Detected missing cell in Row " + row.getKey() + "! Therefore, we create a datarow with missing cells, too.");
+					final DataCell[] missingCells = new DataCell[objectNames.size()];
+					Arrays.fill(missingCells, DataType.getMissingCell());
+					return missingCells;
+				}
 			}
 
 			/**
@@ -407,8 +416,7 @@ public class CellProfilerInstance {
 
 				public FloatConverter(final Img<T> input) {
 
-					final ValuePair<T, T> res = Operations.compute(
-							new MinMax<T>(), input);
+					net.imglib2.util.Pair<T, T> res = KNIPGateway.ops().stats().minMax(input);
 
 					this.min = res.getA().getRealDouble();
 					this.max = res.getB().getRealDouble();

@@ -3,6 +3,7 @@ package org.knime.knip.cellprofiler.nodes.contentexpander;
 import java.io.File;
 import java.io.IOException;
 
+import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
@@ -59,7 +60,11 @@ public class MeasurementToTableNodeModel extends NodeModel {
 		BufferedDataContainer outData = null;
 
 		for (final DataRow row : inData[0]) {
-			final CellProfilerContent content = ((CellProfilerValue) row
+			final DataCell cell = row.getCell(measurementColumnIndex);
+			if (cell.isMissing())
+				throw new IllegalStateException("Can't handle missing cells in CellProfiler Measurements To Table Node. Aborting!");
+				
+				final CellProfilerContent content = ((CellProfilerValue) row
 					.getCell(measurementColumnIndex)).getCellProfilerContent();
 			if (outData == null) {
 				outData = exec.createDataContainer(content.getMeasurement()
