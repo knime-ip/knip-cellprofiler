@@ -67,8 +67,7 @@ public class CellProfilerInstance {
 
 	private boolean closed = false;
 
-	private IKnimeBridge m_knimeBridge = new KnimeBridgeFactory()
-			.newKnimeBridge();
+	private IKnimeBridge m_knimeBridge = new KnimeBridgeFactory().newKnimeBridge();
 
 	private int m_port;
 
@@ -83,20 +82,19 @@ public class CellProfilerInstance {
 	 * @throws ZMQException
 	 * @throws PipelineException
 	 */
-	public CellProfilerInstance() throws IOException, ZMQException,
-			ProtocolException, URISyntaxException, PipelineException {
+	public CellProfilerInstance()
+			throws IOException, ZMQException, ProtocolException, URISyntaxException, PipelineException {
 		// Do some error checks on the configured module path
-		final String[] cellProfilerCommand = CellProfilerPreferencePage
-				.getCellProfilerCommand();
+		final String[] cellProfilerCommand = CellProfilerPreferencePage.getCellProfilerCommand();
 
 		// Get a free port for communication with CellProfiler
 		m_port = getFreePort();
 		// Start CellProfiler
 
 		final String param = "--knime-bridge-address=tcp://127.0.0.1:" + m_port;
-		final ProcessBuilder processBuilder = cellProfilerCommand[0].isEmpty() ? new ProcessBuilder(
-				cellProfilerCommand[1], param) : new ProcessBuilder(
-				cellProfilerCommand[0], cellProfilerCommand[1], param);
+		final ProcessBuilder processBuilder = cellProfilerCommand[0].isEmpty()
+				? new ProcessBuilder(cellProfilerCommand[1], param)
+				: new ProcessBuilder(cellProfilerCommand[0], cellProfilerCommand[1], param);
 
 		m_cellProfilerProcess = processBuilder.start();
 
@@ -107,10 +105,9 @@ public class CellProfilerInstance {
 		m_knimeBridge.connect(new URI("tcp://127.0.0.1:" + m_port));
 	}
 
-	public void loadPipeline(final String pipelineFile) throws ZMQException,
-			PipelineException, ProtocolException, IOException {
-		m_knimeBridge.loadPipeline(FileUtils.readFileToString(new File(
-				pipelineFile)));
+	public void loadPipeline(final String pipelineFile)
+			throws ZMQException, PipelineException, ProtocolException, IOException {
+		m_knimeBridge.loadPipeline(FileUtils.readFileToString(new File(pipelineFile)));
 		m_knimeBridge.cleanPipeline();
 	}
 
@@ -125,13 +122,11 @@ public class CellProfilerInstance {
 	/**
 	 * @return Spec of the output produced by the pipeline.
 	 */
-	public static DataTableSpec getOutputSpec(final DataTableSpec inSpec,
-			final Pair<String, String>[] imageColumns,
+	public static DataTableSpec getOutputSpec(final DataTableSpec inSpec, final Pair<String, String>[] imageColumns,
 			final List<String> objectNames) {
 		// Passing null to createColumnRearranger will cause an NPE if we use it
 		// for more than the spec
-		return createColumnRearranger(inSpec, imageColumns, null, objectNames)
-				.createSpec();
+		return createColumnRearranger(inSpec, imageColumns, null, objectNames).createSpec();
 	}
 
 	/**
@@ -152,68 +147,51 @@ public class CellProfilerInstance {
 	 * @throws ZMQException
 	 * @throws CanceledExecutionException
 	 */
-	public BufferedDataTable execute(ExecutionContext exec,
-			BufferedDataTable inputTable, Pair<String, String>[] imageColumns,
-			List<String> objectNames) throws IOException, ZMQException,
-			CellProfilerException, PipelineException, ProtocolException,
-			CanceledExecutionException {
-		ColumnRearranger colRearranger = createColumnRearranger(
-				inputTable.getDataTableSpec(), imageColumns, m_knimeBridge,
-				objectNames);
+	public BufferedDataTable execute(ExecutionContext exec, BufferedDataTable inputTable,
+			Pair<String, String>[] imageColumns, List<String> objectNames) throws IOException, ZMQException,
+					CellProfilerException, PipelineException, ProtocolException, CanceledExecutionException {
+		ColumnRearranger colRearranger = createColumnRearranger(inputTable.getDataTableSpec(), imageColumns,
+				m_knimeBridge, objectNames);
 		return exec.createColumnRearrangeTable(inputTable, colRearranger, exec);
 	}
 
-	private static CellProfilerCell[] createCellProfilerContentCell(
-			final String parentKey, final IKnimeBridge knimeBridge) {
+	private static CellProfilerCell[] createCellProfilerContentCell(final String parentKey,
+			final IKnimeBridge knimeBridge) {
 
 		final List<String> measurementNames = knimeBridge.getResultTableNames();
-		final CellProfilerCell[] cells = new CellProfilerCell[measurementNames
-				.size()];
+		final CellProfilerCell[] cells = new CellProfilerCell[measurementNames.size()];
 
 		int i = 0;
 		for (String measurementName : measurementNames) {
-			CellProfilerMeasurementTable measurement = new CellProfilerMeasurementTable(
-					parentKey);
-			for (IFeatureDescription featureDescription : knimeBridge
-					.getFeatures(measurementName)) {
+			CellProfilerMeasurementTable measurement = new CellProfilerMeasurementTable(parentKey);
+			for (IFeatureDescription featureDescription : knimeBridge.getFeatures(measurementName)) {
 				if (featureDescription.getType().equals(Double.class)) {
-					double[] values = knimeBridge
-							.getDoubleMeasurements((IFeatureDescription) featureDescription);
-					measurement.addDoubleFeature(featureDescription.getName(),
-							values);
+					double[] values = knimeBridge.getDoubleMeasurements((IFeatureDescription) featureDescription);
+					measurement.addDoubleFeature(featureDescription.getName(), values);
 				} else if (featureDescription.getType().equals(Float.class)) {
-					float[] values = knimeBridge
-							.getFloatMeasurements((IFeatureDescription) featureDescription);
-					measurement.addFloatFeature(featureDescription.getName(),
-							values);
+					float[] values = knimeBridge.getFloatMeasurements((IFeatureDescription) featureDescription);
+					measurement.addFloatFeature(featureDescription.getName(), values);
 				} else if (featureDescription.getType().equals(Integer.class)) {
-					int[] values = knimeBridge
-							.getIntMeasurements((IFeatureDescription) featureDescription);
-					measurement.addIntegerFeature(featureDescription.getName(),
-							values);
+					int[] values = knimeBridge.getIntMeasurements((IFeatureDescription) featureDescription);
+					measurement.addIntegerFeature(featureDescription.getName(), values);
 				} else if (featureDescription.getType().equals(String.class)) {
-					String value = knimeBridge
-							.getStringMeasurement((IFeatureDescription) featureDescription);
-					measurement.addStringFeature(featureDescription.getName(),
-							value);
+					String value = knimeBridge.getStringMeasurement((IFeatureDescription) featureDescription);
+					measurement.addStringFeature(featureDescription.getName(), value);
 				}
 			}
 
-			cells[i++] = new CellProfilerCell(new CellProfilerContent(
-					parentKey, measurement,
-					measurementName.equals(KBConstants.IMAGE)));
+			cells[i++] = new CellProfilerCell(
+					new CellProfilerContent(parentKey, measurement, measurementName.equals(KBConstants.IMAGE)));
 		}
 
 		return cells;
 	}
 
-	private void startStreamListener(final InputStream stream,
-			final boolean error) {
+	private void startStreamListener(final InputStream stream, final boolean error) {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				BufferedReader in = new BufferedReader(new InputStreamReader(
-						stream));
+				BufferedReader in = new BufferedReader(new InputStreamReader(stream));
 				String line = null;
 				try {
 					while ((line = in.readLine()) != null) {
@@ -279,10 +257,8 @@ public class CellProfilerInstance {
 		return m_knimeBridge.getResultTableNames();
 	}
 
-	private static ColumnRearranger createColumnRearranger(
-			final DataTableSpec inSpec,
-			final Pair<String, String>[] imageColumns,
-			final IKnimeBridge knimeBridge, final List<String> objectNames) {
+	private static ColumnRearranger createColumnRearranger(final DataTableSpec inSpec,
+			final Pair<String, String>[] imageColumns, final IKnimeBridge knimeBridge, final List<String> objectNames) {
 
 		final ColumnRearranger rearranger = new ColumnRearranger(inSpec);
 		final DataColumnSpec[] colSpecs = new DataColumnSpec[objectNames.size()];
@@ -290,8 +266,7 @@ public class CellProfilerInstance {
 		for (final String colName : objectNames) {
 			final String columnName = DataTableSpec.getUniqueColumnName(inSpec,
 					"CellProfiler Measurement: [" + colName + "]");
-			colSpecs[k++] = new DataColumnSpecCreator(columnName,
-					CellProfilerCell.TYPE).createSpec();
+			colSpecs[k++] = new DataColumnSpecCreator(columnName, CellProfilerCell.TYPE).createSpec();
 		}
 
 		final int[] colIndexes = new int[imageColumns.length];
@@ -305,78 +280,57 @@ public class CellProfilerInstance {
 			@Override
 			public DataCell[] getCells(final DataRow row) {
 				try {
-					return createCells(row, inSpec, imageColumns, colIndexes,
-							knimeBridge);
-				} catch (ZMQException | ProtocolException
-						| CellProfilerException | PipelineException e) {
+					return createCells(row, inSpec, imageColumns, colIndexes, knimeBridge);
+				} catch (ZMQException | ProtocolException | CellProfilerException | PipelineException e) {
 					throw new RuntimeException(e.getMessage(), e);
 				}
 			}
 
 			@SuppressWarnings({ "rawtypes", "unchecked" })
-			private <T extends RealType<T>> DataCell[] createCells(
-					final DataRow row, final DataTableSpec inSpec,
-					final Pair<String, String>[] imageColumns,
-					final int[] colIndexes, final IKnimeBridge knimeBridge)
-					throws ProtocolException, ZMQException,
-					CellProfilerException, PipelineException {
+			private <T extends RealType<T>> DataCell[] createCells(final DataRow row, final DataTableSpec inSpec,
+					final Pair<String, String>[] imageColumns, final int[] colIndexes, final IKnimeBridge knimeBridge)
+							throws ProtocolException, ZMQException, CellProfilerException, PipelineException {
 				boolean group = false;
 				Map<String, ImgPlus<?>> images = new HashMap<String, ImgPlus<?>>();
 				for (int i = 0; i < colIndexes.length; i++) {
 					final DataCell cell = row.getCell(colIndexes[i]);
-					
-					if(cell.isMissing()){
+
+					if (cell.isMissing()) {
 						images = null;
 						break;
 					}
-					
+
 					final ImgPlusValue<T> value = (ImgPlusValue<T>) cell;
 
 					if (m_reference == null || m_reference[i] == null) {
 						m_reference = new Interval[colIndexes.length];
 						m_reference[i] = value.getImgPlus();
-					} else if (!Intervals.equalDimensions(m_reference[i],
-							value.getImgPlus())) {
-						throw new IllegalStateException(
-								"All images in one column must have the same dimensionality!");
+					} else if (!Intervals.equalDimensions(m_reference[i], value.getImgPlus())) {
+						throw new IllegalStateException("All images in one column must have the same dimensionality!");
 					}
 
 					// convert to floats
-					final RandomAccessibleInterval<FloatType> converted = Converters
-							.convert((RandomAccessibleInterval<T>) value
-									.getImgPlus(),
-									new FloatConverter<T>(value.getImgPlus()),
-									new FloatType());
+					final RandomAccessibleInterval<FloatType> converted = Converters.convert(
+							(RandomAccessibleInterval<T>) value.getImgPlus(), new FloatConverter<T>(value.getImgPlus()),
+							new FloatType());
 
-					if (converted.numDimensions() == 2
-							|| (converted.numDimensions() == 3 && value
-									.getImgPlus().axis(2).type()
-									.equals(Axes.CHANNEL))) {
+					if (converted.numDimensions() == 2 || (converted.numDimensions() == 3
+							&& value.getImgPlus().axis(2).type().equals(Axes.CHANNEL))) {
 						try {
-							images.put(
-									imageColumns[i].getFirst(),
+							images.put(imageColumns[i].getFirst(),
 									new ImgPlus(
-											new ImgView<FloatType>(
-													converted,
-													value.getImgPlus()
-															.factory()
-															.imgFactory(
-																	new FloatType())),
+											new ImgView<FloatType>(converted,
+													value.getImgPlus().factory().imgFactory(new FloatType())),
 											value.getImgPlus()));
 						} catch (IncompatibleTypeException e) {
 							throw new RuntimeException(e);
 						}
 					} else {
 						try {
-							images.put(
-									imageColumns[i].getFirst(),
+							images.put(imageColumns[i].getFirst(),
 									new ImgPlus(
-											new ImgView<FloatType>(
-													converted,
-													value.getImgPlus()
-															.factory()
-															.imgFactory(
-																	new FloatType())),
+											new ImgView<FloatType>(converted,
+													value.getImgPlus().factory().imgFactory(new FloatType())),
 											value.getImgPlus()));
 						} catch (IncompatibleTypeException e) {
 							throw new RuntimeException(e);
@@ -384,7 +338,7 @@ public class CellProfilerInstance {
 						group = true;
 					}
 				}
-				
+
 				if (images != null) {
 					if (group) {
 						knimeBridge.runGroup(images);
@@ -393,12 +347,12 @@ public class CellProfilerInstance {
 					}
 
 					return createCellProfilerContentCell(row.getKey().getString(), knimeBridge);
-				} else {
-					KNIPGateway.log().warn("Detected missing cell in Row " + row.getKey() + "! Therefore, we create a datarow with missing cells, too.");
-					final DataCell[] missingCells = new DataCell[objectNames.size()];
-					Arrays.fill(missingCells, DataType.getMissingCell());
-					return missingCells;
 				}
+				KNIPGateway.log().warn("Detected missing cell in Row " + row.getKey()
+						+ "! Therefore, we create a datarow with missing cells, too.");
+				final DataCell[] missingCells = new DataCell[objectNames.size()];
+				Arrays.fill(missingCells, DataType.getMissingCell());
+				return missingCells;
 			}
 
 			/**
@@ -408,8 +362,7 @@ public class CellProfilerInstance {
 			 *
 			 * @param <T>
 			 */
-			class FloatConverter<T extends RealType<T>> implements
-					Converter<T, FloatType> {
+			class FloatConverter<T extends RealType<T>> implements Converter<T, FloatType> {
 
 				private final double max;
 				private final double min;

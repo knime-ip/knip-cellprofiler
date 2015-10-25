@@ -40,8 +40,7 @@ public class PipelineExecutorNodeConfig {
 	 * @throws InvalidSettingsException
 	 *             If the settings are invalid.
 	 */
-	public void loadConfig(NodeSettingsRO settings)
-			throws InvalidSettingsException {
+	public void loadConfig(NodeSettingsRO settings) throws InvalidSettingsException {
 		m_pipelineFile = settings.getString(PIPELINE_FILE_CFG);
 		m_imageColumns = settings.getStringArray(IMAGE_COLUMNS_CFG);
 		m_inputParameters = settings.getStringArray(INPUT_PARAMETERS_CFG);
@@ -56,10 +55,8 @@ public class PipelineExecutorNodeConfig {
 	 */
 	public void loadConfigInDialog(NodeSettingsRO settings) {
 		m_pipelineFile = settings.getString(PIPELINE_FILE_CFG, "");
-		m_imageColumns = settings.getStringArray(IMAGE_COLUMNS_CFG,
-				new String[0]);
-		m_inputParameters = settings.getStringArray(INPUT_PARAMETERS_CFG,
-				new String[0]);
+		m_imageColumns = settings.getStringArray(IMAGE_COLUMNS_CFG, new String[0]);
+		m_inputParameters = settings.getStringArray(INPUT_PARAMETERS_CFG, new String[0]);
 		m_objectNames = settings.getStringArray(OBJECT_NAMES_CONFIG, new String[0]);
 	}
 
@@ -127,8 +124,7 @@ public class PipelineExecutorNodeConfig {
 	public List<String> getObjectNames() {
 		if (m_objectNames == null)
 			return null;
-		else
-			return Arrays.asList(m_objectNames);
+		return Arrays.asList(m_objectNames);
 	}
 
 	/**
@@ -136,7 +132,6 @@ public class PipelineExecutorNodeConfig {
 	 *            number of measurement outputs of this pipeline
 	 */
 	public void setObjectNames(final List<String> objectNames) {
-		this.m_objectNames = objectNames
-				.toArray(new String[objectNames.size()]);
+		this.m_objectNames = objectNames.toArray(new String[objectNames.size()]);
 	}
 }
