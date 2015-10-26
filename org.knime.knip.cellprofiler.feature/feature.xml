@@ -2,7 +2,7 @@
 <feature
       id="org.knime.knip.cellprofiler.feature"
       label="KNIME Image Processing - CellProfiler Integration"
-      version="0.2.0.qualifier"
+      version="0.2.1.qualifier"
       provider-name="Broad Institute / University of Konstanz">
 
    <description>
