@@ -1,4 +1,4 @@
 @org.knime.knip.cellprofiler=0.2.0.qualifier
 \!/=
 file_export_version=3.0
-/instance/org.knime.knip.cellprofiler/path=/home/knime/CellProfiler/
+/instance/org.knime.knip.cellprofiler/path=/opt/CellProfiler/
