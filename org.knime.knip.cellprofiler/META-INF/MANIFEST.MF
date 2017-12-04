@@ -4,12 +4,12 @@ Bundle-SymbolicName: org.knime.knip.cellprofiler;singleton:=true
 Bundle-ManifestVersion: 2
 Bundle-Version: 0.3.3.qualifier
 Bundle-Vendor: Broad Institute / University of Konstanz
-Require-Bundle: org.knime.knip.base;bundle-version="[1.6.0,1.7.0)",
+Require-Bundle: org.knime.knip.base;bundle-version="[1.6.0,2.0.0)",
  org.eclipse.ui;bundle-version="3.108.0",
  imagej-common;bundle-version="0.24.3",
  imglib2;bundle-version="3.2.1",
  org.apache.commons.lang3;bundle-version="3.2.1",
- scijava-common;bundle-version="2.62.2",
+ scijava-common;bundle-version="2.65.0",
  org.knime.knip.core;bundle-version="1.6.0",
  imagej-ops;bundle-version="0.36.0",
  org.knime.core;bundle-version="3.3.1",
