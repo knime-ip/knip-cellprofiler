@@ -104,7 +104,7 @@ public class CellProfilerPreferencePage extends PreferencePage implements
 
 		if ((OS.indexOf("mac") >= 0) || (OS.indexOf("darwin") >= 0)) {
 			command[0] = "";
-			command[1] = path;
+			command[1] = guessMacOSBinaryFromPath(path);
 		} else if (OS.indexOf("win") >= 0) {
 			command[0] = "";
 			command[1] = path + "CellProfiler.exe";
@@ -122,6 +122,15 @@ public class CellProfilerPreferencePage extends PreferencePage implements
 
 	private static String getOS() {
 		return System.getProperty("os.name", "generic").toLowerCase();
+	}
+
+	private static String guessMacOSBinaryFromPath(final String path) {
+		if (new File(path + "Contents/MacOS/CellProfiler").isFile()) {
+			// Path to CellProfiler 2.x binary
+			return path + "Contents/MacOS/CellProfiler";
+		}
+		// Path to CellProfiler 3.x binary
+		return path + "Contents/MacOS/cp";
 	}
 
 	private static String doAutoGuessCellProfilerPath() {
