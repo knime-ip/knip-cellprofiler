@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature id="org.knime.knip.cellprofiler.feature" version="0.0.0">
+       <category name="knip-cellprofiler" />
+   </feature>
+
+   <category-def name="knip-cellprofiler" label="Build artifacts from knip-cellprofiler">
+       <description>Build artifacts from knip-cellprofiler </description>
+   </category-def>
+</site>
